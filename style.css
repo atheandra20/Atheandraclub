@@ -1,0 +1,753 @@
+/* =========================================================
+   ATHEANDRA — style.css
+   Palette: Charcoal / Cream / White / Soft Grey — no accents
+   ========================================================= */
+
+:root {
+  --charcoal: #26251f;
+  --charcoal-deep: #1a1916;
+  --cream: #f2ece0;
+  --cream-soft: #ece4d4;
+  --white: #ffffff;
+  --grey: #cdc6b6;
+  --grey-line: rgba(38, 37, 31, 0.14);
+  --grey-line-on-dark: rgba(242, 236, 224, 0.16);
+  --text-on-cream: #26251f;
+  --text-muted: #6f6a5c;
+  --text-on-dark: #f2ece0;
+  --text-on-dark-muted: #b8b2a1;
+
+  --radius-lg: 28px;
+  --radius-md: 20px;
+  --radius-sm: 14px;
+
+  --font-display: "Fraunces", Georgia, serif;
+  --font-body: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+
+body {
+  font-family: var(--font-body);
+  color: var(--text-on-cream);
+  background: var(--cream);
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+body.no-scroll { overflow: hidden; }
+
+img { max-width: 100%; display: block; }
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+  border: none;
+  background: none;
+  color: inherit;
+}
+
+button:focus-visible,
+.name-trigger:focus-visible,
+.flip-card:focus-visible,
+.name-item:focus-visible {
+  outline: 2px solid var(--charcoal);
+  outline-offset: 3px;
+}
+#screen-login button:focus-visible,
+#screen-login .name-trigger:focus-visible {
+  outline-color: var(--cream);
+}
+
+h1, h2, h3, h4 {
+  font-family: var(--font-display);
+  margin: 0;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+}
+
+p { margin: 0; }
+
+#app { min-height: 100vh; min-height: 100dvh; position: relative; }
+
+/* ---------- SCREENS ---------- */
+.screen {
+  display: none;
+  min-height: 100vh;
+  min-height: 100dvh;
+  width: 100%;
+}
+.screen.active {
+  display: flex;
+  flex-direction: column;
+  animation: screenFade 0.5s var(--ease);
+}
+@keyframes screenFade {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.screen-inner {
+  width: 100%;
+  max-width: 460px;
+  margin: 0 auto;
+  padding: 32px 24px 40px;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+/* =========================================================
+   1. LOGIN
+   ========================================================= */
+#screen-login {
+  background: var(--charcoal);
+  color: var(--text-on-dark);
+}
+
+.login-top {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding-top: 12vh;
+}
+
+.login-logo {
+  width: 108px;
+  height: 108px;
+  object-fit: contain;
+  margin-bottom: 28px;
+}
+
+.login-welcome {
+  font-size: 1.9rem;
+  color: var(--text-on-dark);
+  line-height: 1.15;
+}
+
+.login-est {
+  margin-top: 10px;
+  font-size: 0.8rem;
+  letter-spacing: 0.08em;
+  color: var(--text-on-dark-muted);
+}
+
+.login-bottom {
+  padding-top: 20px;
+}
+
+.login-question {
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  color: var(--text-on-dark);
+  margin-bottom: 16px;
+}
+
+.name-trigger {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 20px;
+  border-radius: var(--radius-md);
+  background: rgba(242, 236, 224, 0.06);
+  border: 1px solid var(--grey-line-on-dark);
+  color: var(--text-on-dark-muted);
+  text-align: left;
+  transition: border-color 0.25s var(--ease), background 0.25s var(--ease);
+}
+.name-trigger.filled {
+  color: var(--cream);
+  background: rgba(242, 236, 224, 0.1);
+  border-color: rgba(242, 236, 224, 0.32);
+}
+.name-trigger:active { transform: scale(0.99); }
+
+.name-trigger-arrow {
+  font-size: 1.1rem;
+  opacity: 0.6;
+}
+
+.login-continue {
+  margin-top: 16px;
+  width: 100%;
+  padding: 17px;
+  border-radius: var(--radius-md);
+  background: var(--cream);
+  color: var(--charcoal-deep);
+  font-weight: 600;
+  font-size: 0.98rem;
+  letter-spacing: 0.02em;
+  transition: opacity 0.25s var(--ease), transform 0.15s var(--ease);
+}
+.login-continue:disabled {
+  opacity: 0.35;
+  pointer-events: none;
+}
+.login-continue:active { transform: scale(0.98); }
+
+/* Name picker bottom-sheet */
+.sheet-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(20, 19, 16, 0.55);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s var(--ease);
+  z-index: 40;
+}
+.sheet-overlay.open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.name-sheet {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  max-width: 460px;
+  margin: 0 auto;
+  background: var(--cream);
+  color: var(--text-on-cream);
+  border-radius: 26px 26px 0 0;
+  transform: translateY(100%);
+  transition: transform 0.38s var(--ease);
+  z-index: 41;
+  max-height: 82vh;
+  display: flex;
+  flex-direction: column;
+  padding: 14px 20px 24px;
+}
+.name-sheet.open { transform: translateY(0); }
+
+.sheet-handle {
+  width: 36px;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--grey);
+  margin: 0 auto 16px;
+}
+
+.sheet-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+.sheet-header h3 { font-size: 1.15rem; }
+
+.sheet-close {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--cream-soft);
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.name-search {
+  width: 100%;
+  padding: 13px 16px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--grey-line);
+  background: var(--white);
+  font-size: 0.95rem;
+  margin-bottom: 12px;
+  color: var(--text-on-cream);
+}
+.name-search:focus { outline: 2px solid var(--charcoal); outline-offset: 1px; }
+
+.name-list {
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding-right: 2px;
+}
+
+.name-item {
+  text-align: left;
+  padding: 13px 14px;
+  border-radius: var(--radius-sm);
+  font-size: 0.98rem;
+  color: var(--text-on-cream);
+  transition: background 0.15s var(--ease);
+}
+.name-item:hover, .name-item:focus-visible { background: var(--cream-soft); }
+.name-item.selected {
+  background: var(--charcoal);
+  color: var(--cream);
+}
+.name-empty {
+  padding: 20px 14px;
+  color: var(--text-muted);
+  text-align: center;
+  font-size: 0.9rem;
+}
+
+/* =========================================================
+   2. MOOD SCREEN
+   ========================================================= */
+#screen-mood { background: var(--cream); }
+
+.mood-header { text-align: center; padding-top: 6vh; }
+.mood-title { font-size: 1.6rem; line-height: 1.2; }
+.mood-date {
+  margin-top: 10px;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  letter-spacing: 0.02em;
+}
+
+.mood-grid {
+  margin-top: 32px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  flex: 1;
+}
+
+.mood-card {
+  background: var(--white);
+  border: 1px solid var(--grey-line);
+  border-radius: var(--radius-md);
+  padding: 20px 12px 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 8px;
+  transition: border-color 0.2s var(--ease), background 0.2s var(--ease), transform 0.15s var(--ease);
+}
+.mood-card:active { transform: scale(0.97); }
+.mood-card.selected {
+  background: var(--charcoal);
+  border-color: var(--charcoal);
+}
+.mood-card.selected .mood-label,
+.mood-card.selected .mood-sub { color: var(--cream); }
+.mood-card.selected .mood-icon { color: var(--cream); }
+
+.mood-icon {
+  width: 40px;
+  height: 40px;
+  color: var(--charcoal);
+}
+
+.mood-label {
+  font-family: var(--font-display);
+  font-size: 1.02rem;
+  color: var(--text-on-cream);
+}
+.mood-sub {
+  font-size: 0.74rem;
+  color: var(--text-muted);
+  line-height: 1.3;
+}
+.mood-card.selected .mood-sub { color: var(--text-on-dark-muted); }
+
+.primary-btn {
+  margin-top: 24px;
+  width: 100%;
+  padding: 17px;
+  border-radius: var(--radius-md);
+  background: var(--charcoal);
+  color: var(--cream);
+  font-weight: 600;
+  font-size: 0.98rem;
+  transition: opacity 0.25s var(--ease), transform 0.15s var(--ease);
+}
+.primary-btn:disabled { opacity: 0.35; pointer-events: none; }
+.primary-btn:active { transform: scale(0.98); }
+
+.secondary-btn {
+  margin-top: 14px;
+  width: 100%;
+  padding: 16px;
+  border-radius: var(--radius-md);
+  background: transparent;
+  border: 1px solid var(--grey-line);
+  color: var(--text-on-cream);
+  font-weight: 500;
+  font-size: 0.95rem;
+}
+
+/* =========================================================
+   3. MOOD MESSAGE
+   ========================================================= */
+#screen-mood-message { background: var(--cream); }
+.mood-message-wrap {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 20px;
+}
+.mood-message-icon svg.mood-icon-lg { width: 64px; height: 64px; }
+#mood-message-title {
+  font-size: 1.55rem;
+  line-height: 1.25;
+  padding: 0 6px;
+}
+#mood-message-text {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 1.08rem;
+  line-height: 1.65;
+  color: var(--text-on-cream);
+  max-width: 380px;
+}
+
+/* =========================================================
+   4. BIRTHDAY GATE
+   ========================================================= */
+#screen-birthday-gate { background: var(--cream); }
+.birthday-gate-wrap {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 14px;
+}
+.hidden { display: none !important; }
+.eyebrow {
+  font-size: 0.78rem;
+  letter-spacing: 0.14em;
+  color: var(--text-muted);
+}
+.gate-title {
+  font-size: 1.7rem;
+  line-height: 1.2;
+}
+.gate-text {
+  font-size: 0.98rem;
+  color: var(--text-muted);
+  max-width: 320px;
+  line-height: 1.55;
+}
+.gate-actions { width: 100%; margin-top: 8px; }
+
+/* =========================================================
+   5. SELF BIRTHDAY REVEAL
+   ========================================================= */
+#screen-birthday-self-reveal {
+  background: var(--charcoal);
+  color: var(--text-on-dark);
+}
+.self-reveal-wrap {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 16px;
+}
+.self-reveal-wrap .eyebrow { color: var(--text-on-dark-muted); }
+.self-reveal-wrap .gate-title { color: var(--cream); }
+.self-reveal-wrap .gate-text { color: var(--text-on-dark-muted); }
+#self-birthday-name { font-style: normal; }
+.self-reveal-wrap .primary-btn {
+  background: var(--cream);
+  color: var(--charcoal-deep);
+}
+
+/* =========================================================
+   6. BIRTHDAY CARD SCREEN
+   ========================================================= */
+#screen-birthday-card { background: var(--cream); }
+.birthday-card-wrap {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 4vh;
+}
+#birthday-card-heading {
+  font-size: 1.5rem;
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+#birthday-card-list {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 40px;
+  width: 100%;
+}
+
+.bday-card-block {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+}
+
+.tap-hint {
+  font-size: 0.72rem;
+  letter-spacing: 0.14em;
+  color: var(--text-muted);
+  margin-bottom: 14px;
+}
+
+.flip-card {
+  width: 100%;
+  max-width: 300px;
+  aspect-ratio: 900 / 1268;
+  perspective: 1600px;
+  cursor: pointer;
+}
+
+.flip-card-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transition: transform 0.7s var(--ease);
+  transform-style: preserve-3d;
+  border-radius: var(--radius-lg);
+  box-shadow: 0 18px 40px rgba(26, 25, 22, 0.18);
+}
+.flip-card.flipped .flip-card-inner { transform: rotateY(180deg); }
+
+.flip-card-face {
+  position: absolute;
+  inset: 0;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  background: var(--white);
+}
+.flip-card-face > img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.flip-card-back { transform: rotateY(180deg); }
+
+.generic-card {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 32px 24px;
+  background: var(--charcoal);
+  color: var(--cream);
+}
+.generic-card-logo { width: 56px; height: 56px; object-fit: contain; margin-bottom: 18px; opacity: 0.92; }
+.generic-card-eyebrow { font-size: 0.7rem; letter-spacing: 0.14em; color: var(--text-on-dark-muted); margin-bottom: 14px; }
+.generic-card-name { font-size: 1.4rem; line-height: 1.25; color: var(--cream); }
+.generic-card-tag { margin-top: 10px; font-size: 0.85rem; color: var(--text-on-dark-muted); }
+.generic-card-back-text {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 1.05rem;
+  line-height: 1.6;
+  color: var(--cream);
+}
+.generic-card-back-sign { margin-top: 18px; font-size: 0.75rem; letter-spacing: 0.12em; color: var(--text-on-dark-muted); }
+
+.bday-name {
+  margin-top: 16px;
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  text-align: center;
+}
+
+#birthday-card-continue { margin-top: 8px; }
+
+/* =========================================================
+   7. HOME
+   ========================================================= */
+#screen-home { background: var(--cream); }
+
+.home-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 24px;
+  max-width: 900px;
+  margin: 0 auto;
+  width: 100%;
+}
+.home-topbar-logo { display: flex; align-items: center; gap: 10px; }
+.home-topbar-logo img { width: 32px; height: 32px; object-fit: contain; }
+.home-topbar-logo span {
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  letter-spacing: 0.02em;
+}
+
+.home-content {
+  flex: 1;
+  width: 100%;
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 8px 24px 100px;
+}
+
+.home-view { display: none; }
+.home-view.active {
+  display: block;
+  animation: screenFade 0.4s var(--ease);
+}
+
+.home-hero {
+  background: var(--charcoal);
+  color: var(--text-on-dark);
+  border-radius: var(--radius-lg);
+  padding: 34px 26px;
+  margin-top: 8px;
+}
+.home-hero-eyebrow {
+  font-size: 0.72rem;
+  letter-spacing: 0.14em;
+  color: var(--text-on-dark-muted);
+}
+.home-hero h1 {
+  margin-top: 12px;
+  font-size: 1.7rem;
+  color: var(--cream);
+  line-height: 1.2;
+}
+.home-hero p {
+  margin-top: 10px;
+  color: var(--text-on-dark-muted);
+  font-size: 0.92rem;
+  line-height: 1.55;
+  max-width: 340px;
+}
+
+.home-section-title {
+  margin-top: 34px;
+  margin-bottom: 14px;
+  font-size: 1.1rem;
+}
+
+.coming-soon-card {
+  background: var(--white);
+  border: 1px solid var(--grey-line);
+  border-radius: var(--radius-md);
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.coming-soon-card .dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--grey);
+  flex-shrink: 0;
+}
+.coming-soon-card p { font-size: 0.9rem; color: var(--text-muted); }
+.coming-soon-card strong { display: block; font-family: var(--font-display); font-size: 1rem; color: var(--text-on-cream); margin-bottom: 3px; }
+
+.coming-soon-full {
+  min-height: 50vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 10px;
+  padding-top: 6vh;
+}
+.coming-soon-full .cs-icon {
+  width: 52px; height: 52px;
+  border-radius: 50%;
+  border: 1px solid var(--grey-line);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 6px;
+  color: var(--text-muted);
+}
+.coming-soon-full h2 { font-size: 1.35rem; }
+.coming-soon-full p { color: var(--text-muted); font-size: 0.92rem; }
+
+/* Bottom nav (mobile) */
+.home-nav {
+  position: fixed;
+  left: 0; right: 0; bottom: 0;
+  background: var(--white);
+  border-top: 1px solid var(--grey-line);
+  display: flex;
+  justify-content: space-around;
+  padding: 10px 6px calc(10px + env(safe-area-inset-bottom, 0px));
+  z-index: 20;
+}
+.nav-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  color: var(--text-muted);
+  font-size: 0.66rem;
+  letter-spacing: 0.02em;
+  transition: color 0.2s var(--ease);
+}
+.nav-btn svg { width: 21px; height: 21px; }
+.nav-btn.active { color: var(--charcoal); }
+
+/* =========================================================
+   RESPONSIVE — tablet / desktop
+   ========================================================= */
+@media (min-width: 760px) {
+  .screen-inner { max-width: 480px; padding-top: 48px; }
+
+  .login-top { padding-top: 8vh; }
+
+  #screen-home .screen-inner,
+  #screen-home { display: block; }
+
+  .home-topbar { padding: 22px 40px; }
+  .home-content { padding: 8px 40px 60px; max-width: 1040px; }
+
+  .home-nav {
+    position: static;
+    border-top: none;
+    justify-content: flex-start;
+    gap: 28px;
+    padding: 0 40px 18px;
+    max-width: 1040px;
+    margin: 0 auto;
+  }
+  .nav-btn { flex-direction: row; font-size: 0.85rem; }
+
+  .home-hero { padding: 46px 44px; }
+  .home-hero h1 { font-size: 2.1rem; }
+  .home-hero p { max-width: 420px; font-size: 0.98rem; }
+
+  .mood-grid { max-width: 480px; }
+
+  .flip-card { max-width: 320px; }
+}
+
+@media (min-width: 1080px) {
+  .home-hero { padding: 56px 56px; }
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
