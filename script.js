@@ -11,63 +11,64 @@ const MEMBERS = [
   { name: "Alicia Kirana C. I.",       day: 30, month: 11 },
   { name: "Alifah Sahlaa",             day: null, month: null },
   { name: "Alvinatun Ni'mah A.",       day: 27, month: 4 },
-  { name: "Amelia Sinta Dewi",         day: null, month: null },
-  { name: "Amita Siti Maryam",         day: null, month: null },
+  { name: "Amelia Sinta Dewi",         day: null, month: 12 },
+  { name: "Amita Siti Maryam",         day: 13, month: 3 },
   { name: "Anis Shofa",                day: 27, month: 2 },
-  { name: "Arrofiu Inayatul A.",       day: null, month: null },
-  { name: "Aulia Firda D.",            day: null, month: null },
+  { name: "Arrofiu Inayatul A.",       day: 7,  month: 9 },
+  { name: "Aulia Firda D.",            day: 27, month: 8 },
   { name: "Bahriyatul Lathifa A.",     day: 22, month: 9 },
-  { name: "Bilqis Zakiyyah",           day: null, month: null },
-  { name: "Cahya Niswa Kusuma",        day: null, month: null },
-  { name: "Cahyaning Millati",         day: null, month: null },
-  { name: "Cika Nurossoba",            day: null, month: null },
+  { name: "Barirotul Fuadiyyah",       day: null, month: 6 },
+  { name: "Bilqis Zakiyyah",           day: 27, month: 10 },
+  { name: "Cahya Niswa Kusuma",        day: 3,  month: 5 },
+  { name: "Cahyaning Millati",         day: 22, month: 7 },
+  { name: "Cika Nurossoba",            day: 20, month: 12 },
   { name: "Diandra Nasywa A.",         day: 26, month: 8 },
-  { name: "Dwi Aisyah M.",             day: 25, month: 2 },
+  { name: "Dwi Aisyah M.",             day: 23, month: 2 },
   { name: "Dzakhwa Pradhia Ulaulia",   day: 8,  month: 8 },
-  { name: "Echa Afriana",              day: null, month: null },
-  { name: "Hidayatul Ulya",            day: null, month: null },
+  { name: "Echa Afriana",              day: 28, month: 11 },
+  { name: "Hidayatul Ulya",            day: 12, month: 3 },
   { name: "I'i Abilahni",              day: null, month: null },
   { name: "Iftitach Farah A.",         day: 14, month: 6 },
-  { name: "Kayla Fakhira F.",          day: null, month: null },
-  { name: "Khoirunnisa Ayunda",        day: null, month: null },
+  { name: "Kayla Fakhira F.",          day: null, month: 11 },
+  { name: "Khoirunnisa Ayunda",        day: null, month: 3 },
   { name: "Lanaa 'Ainunnajah",         day: 10, month: 2 },
   { name: "Ma'rifatus Zahro",          day: 11, month: 11 },
-  { name: "Marcella Novia Yolanda",    day: null, month: null },
+  { name: "Marcella Novia Yolanda",    day: null, month: 11 },
   { name: "Marsya Nariswari S.",       day: 26, month: 12 },
-  { name: "Meidiana Alfadinova",       day: null, month: null },
+  { name: "Meidiana Alfadinova",       day: 1,  month: 5 },
   { name: "Muyassaroh",                day: 10, month: 1 },
   { name: "Nabila Apriliana Intan",    day: 20, month: 4 },
   { name: "Nadia Zahrotus S.",         day: null, month: null },
   { name: "Nadin Faizzatul M.",        day: null, month: null },
-  { name: "Nafacha Mufidah",           day: null, month: null },
+  { name: "Nafacha Mufidah",           day: 22, month: 9 },
   { name: "Nailal Muna H",             day: 25, month: 1 },
   { name: "Najwa Aulia Z.",            day: 18, month: 6 },
   { name: "Nasywa Azkiyyah N.",        day: 21, month: 4 },
   { name: "Nasywa Nafillah F.",        day: 14, month: 9 },
   { name: "Nasywa Salsabila",          day: 16, month: 2 },
-  { name: "Nihayatul Maghfiroh",       day: null, month: null },
-  { name: "Nilna Marama",              day: null, month: null },
+  { name: "Nihayatul Maghfiroh",       day: 7,  month: 8 },
+  { name: "Nilna Marama",              day: 3,  month: 5 },
   { name: "Nina Syafitri",             day: 5,  month: 3 },
   { name: "Niswatul Munawwaroh",       day: 9,  month: 3 },
-  { name: "Putri Alifah Anggun",       day: null, month: null },
+  { name: "Putri Alifah Anggun",       day: 27, month: 12 },
   { name: "Putri Khumairoh",           day: 10, month: 6 },
   { name: "Putri Rahmawati",           day: null, month: null },
-  { name: "Qarera Qothrunnada",        day: null, month: null },
-  { name: "Ro'i Fatmalatullayyin",     day: null, month: null },
+  { name: "Qarera Qothrunnada",        day: 21, month: 7 },
+  { name: "Ro'i Fatmalatullayyin",     day: 11, month: 7 },
   { name: "Robiatul Adawiyyah",        day: null, month: null },
   { name: "Sa'adatuz Zainiyyah",       day: 21, month: 2 },
-  { name: "Salsabila Muizzatsani",     day: null, month: null },
-  { name: "Salsabila Triputri",        day: null, month: null },
+  { name: "Salsabila Muizzatsani",     day: null, month: 8 },
+  { name: "Salsabila Triputri",        day: null, month: 4 },
   { name: "Sanaya Aulia A.",           day: 20, month: 4 },
-  { name: "Sandya Farah S.",           day: 3,  month: 3 },
+  { name: "Sandya Farah S.",           day: 1,  month: 3 },
   { name: "Saraswati Alifya D.",       day: null, month: null },
-  { name: "Shelfi Nadian P.",          day: null, month: null },
+  { name: "Shelfi Nadian P.",          day: 30, month: 7 },
   { name: "Shofia Wulida H.",          day: 6,  month: 3 },
-  { name: "Shofwatin Ni'mah",          day: 27, month: 4 },
+  { name: "Shofwatin Ni'mah",          day: 26, month: 4 },
   { name: "Shofy Agustina",            day: 17, month: 8 },
-  { name: "Silla Adyalova",            day: null, month: null },
+  { name: "Silla Adyalova",            day: null, month: 11 },
   { name: "Yusrul Hana Q.",            day: 7,  month: 11 },
-  { name: "Zahra Salsabila",           day: null, month: null },
+  { name: "Zahra Salsabila",           day: 9,  month: 8 },
   { name: "Zakiyyah Aulia Nameer",     day: 21, month: 4 },
 ];
 
@@ -76,6 +77,10 @@ const BIRTHDAY_CARD_ASSETS = {
   "Bahriyatul Lathifa A.": {
     front: "assets/birthdays/bahriyatul/front.jpg",
     back: "assets/birthdays/bahriyatul/back.jpg",
+  },
+  "Nafacha Mufidah": {
+    front: "assets/birthdays/nafacha/front.jpg",
+    back: "assets/birthdays/nafacha/back.jpg",
   },
 };
 
@@ -310,9 +315,25 @@ function runBirthdayCheck() {
   } else if (state.birthdayPeople.length > 0) {
     othersView.classList.remove("hidden");
     btnSee.classList.remove("hidden");
+    setOthersGateCopy(state.birthdayPeople.length);
   } else {
     noneView.classList.remove("hidden");
     btnEnter.classList.remove("hidden");
+  }
+}
+
+function setOthersGateCopy(count) {
+  const titleEl = $("#birthday-others-title");
+  const textEl = $("#birthday-others-text");
+  if (count === 1) {
+    titleEl.textContent = "Someone is celebrating today. ♡";
+    textEl.textContent = "Ada seseorang yang sedang bertambah usia hari ini.";
+  } else if (count === 2) {
+    titleEl.textContent = "Two people are celebrating today. ♡";
+    textEl.textContent = "Ada dua orang yang sedang merayakan hari spesialnya hari ini.";
+  } else {
+    titleEl.textContent = `${count} people are celebrating today. ♡`;
+    textEl.textContent = `Ada ${count} orang yang sedang merayakan hari spesialnya hari ini.`;
   }
 }
 
@@ -435,8 +456,13 @@ function initFlowButtons() {
 
   $("#btn-see-celebrating").addEventListener("click", () => {
     renderBirthdayCards(state.birthdayPeople);
+    const count = state.birthdayPeople.length;
     $("#birthday-card-heading").textContent =
-      state.birthdayPeople.length > 1 ? "They're celebrating today" : "She's celebrating today";
+      count === 1
+        ? "She's celebrating today"
+        : count === 2
+        ? "They're celebrating today"
+        : `${count} people are celebrating today`;
     showScreen("screen-birthday-card");
   });
 
