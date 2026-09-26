@@ -744,6 +744,152 @@ p { margin: 0; }
   .home-hero { padding: 56px 56px; }
 }
 
+/* =========================================================
+   WHERE WE LEARN — world map section (Home)
+   ========================================================= */
+.map-subtitle {
+  margin-top: -8px;
+  margin-bottom: 16px;
+  font-size: 0.88rem;
+  color: var(--text-muted);
+}
+
+.map-card {
+  background: var(--charcoal);
+  border-radius: var(--radius-lg);
+  padding: 18px 18px 16px;
+  overflow: hidden;
+}
+
+.map-wrap {
+  position: relative;
+  width: 100%;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.world-map-svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1000 / 500;
+}
+
+.map-continents path {
+  fill: rgba(242, 236, 224, 0.07);
+  stroke: rgba(242, 236, 224, 0.14);
+  stroke-width: 1;
+}
+
+.map-dot {
+  cursor: pointer;
+  opacity: 0;
+  transform-origin: center;
+  animation: mapDotIn 0.6s var(--ease) forwards;
+  animation-delay: var(--dot-delay, 0ms);
+}
+@keyframes mapDotIn {
+  from { opacity: 0; transform: scale(0.3); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.map-dot-glow {
+  fill: rgba(242, 236, 224, 0.35);
+  filter: blur(2.5px);
+  transition: r 0.25s var(--ease), fill 0.25s var(--ease);
+  pointer-events: none;
+}
+.map-dot-core {
+  fill: var(--cream);
+  transition: r 0.25s var(--ease);
+  pointer-events: none;
+}
+.map-dot-hit {
+  fill: transparent;
+  pointer-events: all;
+}
+.map-dot:hover .map-dot-glow,
+.map-dot:focus-visible .map-dot-glow,
+.map-dot.active .map-dot-glow {
+  r: 8;
+  fill: rgba(242, 236, 224, 0.55);
+}
+.map-dot:hover .map-dot-core,
+.map-dot:focus-visible .map-dot-core,
+.map-dot.active .map-dot-core {
+  r: 2.4;
+}
+.map-dot:focus-visible { outline: none; }
+.map-dot:focus { outline: none; }
+
+.map-popup {
+  position: absolute;
+  z-index: 5;
+  max-width: 220px;
+  background: var(--cream);
+  color: var(--text-on-cream);
+  border-radius: var(--radius-sm);
+  padding: 12px 14px;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.28);
+  pointer-events: none;
+  animation: popupIn 0.22s var(--ease);
+}
+@keyframes popupIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.map-popup-name {
+  font-family: var(--font-display);
+  font-size: 0.92rem;
+  line-height: 1.3;
+  margin-bottom: 4px;
+}
+.map-popup-inst {
+  font-size: 0.78rem;
+  color: var(--text-on-cream);
+}
+.map-popup-loc {
+  font-size: 0.74rem;
+  color: var(--text-muted);
+  margin-top: 1px;
+}
+
+.map-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 4px 2px;
+  flex-wrap: wrap;
+}
+.map-hint {
+  font-size: 0.72rem;
+  color: var(--text-on-dark-muted);
+  letter-spacing: 0.01em;
+}
+.map-stats {
+  font-size: 0.7rem;
+  letter-spacing: 0.08em;
+  color: var(--text-on-dark-muted);
+}
+
+@media (max-width: 759px) {
+  .map-popup.as-sheet {
+    position: fixed;
+    left: 16px;
+    right: 16px;
+    bottom: calc(86px + env(safe-area-inset-bottom, 0px));
+    max-width: none;
+    pointer-events: auto;
+    z-index: 30;
+  }
+}
+
+@media (min-width: 760px) {
+  .map-card { padding: 26px 26px 20px; }
+  .map-popup { pointer-events: auto; }
+}
+
 /* Reduced motion */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {

@@ -164,6 +164,33 @@
           <p id="home-date"></p>
         </div>
 
+        <h3 class="home-section-title">Where We Learn</h3>
+        <p class="map-subtitle">Where are we learning now?</p>
+        <div class="map-card">
+          <div class="map-wrap" id="map-wrap">
+            <svg id="world-map" class="world-map-svg" viewBox="0 0 1000 500" xmlns="http://www.w3.org/2000/svg" aria-label="Peta persebaran anggota Atheandra">
+              <g class="map-continents">
+                <path d="M70,60 C130,40 220,45 270,70 C320,95 340,130 320,165 C300,195 250,210 190,205 C140,200 90,190 60,160 C35,130 40,90 70,60 Z"/>
+                <path d="M300,225 C330,215 360,225 375,250 C390,280 385,320 375,355 C365,390 345,410 325,400 C305,390 295,350 290,310 C285,275 280,245 300,225 Z"/>
+                <path d="M480,70 C510,55 550,58 575,75 C595,90 600,110 585,125 C565,140 530,145 505,135 C485,125 475,105 475,90 C475,82 476,75 480,70 Z"/>
+                <path d="M470,150 C520,140 570,145 600,165 C625,185 635,220 625,260 C615,300 595,335 570,345 C545,352 525,330 515,300 C505,270 490,240 475,210 C462,185 460,165 470,150 Z"/>
+                <path d="M600,60 C680,35 800,30 900,55 C960,72 995,100 998,140 C1000,180 970,210 930,225 C900,236 880,250 860,268 C840,285 810,290 790,278 C770,266 760,245 745,230 C715,225 685,215 660,195 C630,170 605,135 595,100 C590,85 592,70 600,60 Z"/>
+                <path d="M830,300 C860,285 900,288 920,305 C935,318 930,340 915,352 C895,365 865,368 845,358 C828,349 818,332 820,315 C821,308 824,303 830,300 Z"/>
+              </g>
+              <g class="map-dots" id="map-dots"></g>
+            </svg>
+            <div id="map-popup" class="map-popup hidden">
+              <p id="map-popup-name" class="map-popup-name"></p>
+              <p id="map-popup-inst" class="map-popup-inst"></p>
+              <p id="map-popup-loc" class="map-popup-loc"></p>
+            </div>
+          </div>
+          <div class="map-footer">
+            <p class="map-hint">Tap a light to see who's there.</p>
+            <p id="map-stats" class="map-stats"></p>
+          </div>
+        </div>
+
         <h3 class="home-section-title">What's coming</h3>
         <div class="coming-soon-card">
           <span class="dot"></span>
