@@ -617,6 +617,7 @@ function enterHome() {
 const MAP_TILE_URL = "https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png";
 const MAP_ATTRIBUTION =
   '© <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors © <a href="https://carto.com/attributions" target="_blank" rel="noopener">CARTO</a>';
+const MAP_TILE_FALLBACK_URL = "https://tile.openstreetmap.org/{z}/{x}/{y}.png";
 const MAP_WORLD_VIEW = [[-58, -180], [80, 180]];
 const MAP_OVERLAP_PX = 12;      /* titik yang jaraknya <= 12px dianggap bertumpuk */
 const MAP_SPIDER_MIN_ZOOM = 16; /* di atas zoom ini, grup tidak di-zoom lagi tapi langsung di-spiderfy */
@@ -654,15 +655,57 @@ function updateMapStats(points) {
   statsEl.textContent = `${points.length} PEOPLE · ${locations.size} LOCATIONS`;
 }
 
-function showMapFallback() {
-  const fb = $("#map-fallback");
-  if (fb) fb.classList.remove("hidden");
+/* Versi file: harus sama di index.html (meta atheandra-version), style.css (--app-version), dan script.js.
+   Dipakai untuk mendeteksi kalau ada file yang belum ter-update di hosting. */
+const APP_VERSION = "3";
+
+function checkAppVersions() {
+  const stale = [];
+  const meta = document.querySelector('meta[name="atheandra-version"]');
+  if (!meta || meta.content !== APP_VERSION) stale.push("index.html");
+  const cssV = getComputedStyle(document.documentElement).getPropertyValue("--app-version").replace(/["'\s]/g, "");
+  if (cssV !== APP_VERSION) stale.push("style.css");
+  return stale;
 }
+
+/* Tampilkan pesan di kartu peta (dibuat sendiri kalau index.html masih versi lama) */
+function showMapNotice(text) {
+  let fb = $("#map-fallback");
+  if (!fb) {
+    const host = $(".map-card") || $("#view-home");
+    if (!host) return;
+    fb = document.createElement("p");
+    fb.id = "map-fallback";
+    fb.style.cssText = "padding:18px;margin:0;text-align:center;font-size:.85rem;line-height:1.5;color:#cdc6b6;";
+    host.insertBefore(fb, host.firstChild);
+  }
+  fb.textContent = text;
+  fb.classList.remove("hidden");
+}
+
+function showMapFallback(detail) {
+  showMapNotice(
+    "Peta belum bisa dimuat." + (detail ? ` (${detail})` : "") + " Periksa koneksi internet, lalu muat ulang halaman."
+  );
+}
+
+let mapBlocked = false;
 
 /* Dipanggil sekali saat halaman dimuat: hitung data & statistik (belum membuat peta). */
 function initWorldMap() {
   mapPoints = buildMapPoints();
   updateMapStats(mapPoints);
+
+  const stale = checkAppVersions();
+  if (stale.length) {
+    mapBlocked = true;
+    showMapNotice(
+      `Peta belum bisa tampil karena file website belum ter-update semua. Yang masih versi lama: ${stale.join(", ")}. ` +
+      "Ganti file itu di GitHub dengan versi terbaru, lalu muat ulang halaman (Ctrl+Shift+R)."
+    );
+    return;
+  }
+
   const hint = $("#map-hint");
   if (hint && window.matchMedia("(hover: none) and (pointer: coarse)").matches) {
     hint.textContent = "Tap a light to see who's there. Use two fingers to move the map.";
@@ -671,14 +714,14 @@ function initWorldMap() {
 
 /* Peta dibuat saat Home benar-benar tampil (Leaflet butuh ukuran container yang valid). */
 function showWorldMap() {
-  if (!$("#leaflet-map")) return;
+  if (mapBlocked || !$("#leaflet-map")) return;
   requestAnimationFrame(() => {
     if (!worldMapState) {
       try {
         worldMapState = createWorldMap();
       } catch (err) {
         console.error("[Where We Learn] Peta gagal dibuat:", err);
-        showMapFallback();
+        showMapFallback(err && err.message ? err.message : "kesalahan tidak dikenal");
       }
     } else {
       worldMapState.refresh();
@@ -688,7 +731,7 @@ function showWorldMap() {
 
 function createWorldMap() {
   if (typeof L === "undefined") {
-    showMapFallback();
+    showMapFallback("library peta Leaflet tidak termuat");
     return null;
   }
 
@@ -700,6 +743,11 @@ function createWorldMap() {
   const popupLoc = $("#map-popup-loc");
   const popupCoord = $("#map-popup-coord");
   const popupClose = $("#map-popup-close");
+
+  /* pengaman: pastikan container punya tinggi (misal browser lama tanpa aspect-ratio) */
+  if (mapEl.clientHeight < 150 && mapEl.clientWidth > 0) {
+    mapEl.style.height = `${Math.round(mapEl.clientWidth * 0.75)}px`;
+  }
 
   const touchOnly = window.matchMedia("(hover: none) and (pointer: coarse)").matches;
   const worldBounds = L.latLngBounds(MAP_WORLD_VIEW);
@@ -721,11 +769,29 @@ function createWorldMap() {
     .addAttribution(MAP_ATTRIBUTION)
     .addTo(map);
 
-  L.tileLayer(MAP_TILE_URL, {
+  let tiles = L.tileLayer(MAP_TILE_URL, {
     subdomains: "abcd",
     maxZoom: 18,
     noWrap: true,
   }).addTo(map);
+
+  /* Kalau tile CARTO gagal dimuat sama sekali (mis. diblokir jaringan), pindah ke tile OpenStreetMap */
+  let tilesLoaded = 0;
+  let tilesFailed = 0;
+  let usingFallbackTiles = false;
+  tiles.on("tileload", () => { tilesLoaded++; });
+  tiles.on("tileerror", () => {
+    tilesFailed++;
+    if (!usingFallbackTiles && tilesLoaded === 0 && tilesFailed >= 4) {
+      usingFallbackTiles = true;
+      map.removeLayer(tiles);
+      tiles = L.tileLayer(MAP_TILE_FALLBACK_URL, {
+        maxZoom: 18,
+        noWrap: true,
+        className: "tiles-osm",
+      }).addTo(map);
+    }
+  });
 
   map.fitBounds(worldBounds, { animate: false });
   map.setMinZoom(map.getBoundsZoom(worldBounds));

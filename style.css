@@ -4,6 +4,7 @@
    ========================================================= */
 
 :root {
+  --app-version: "3";
   --charcoal: #26251f;
   --charcoal-deep: #1a1916;
   --cream: #f2ece0;
@@ -823,6 +824,9 @@ p { margin: 0; }
   font-size: 10px;
 }
 .map-wrap .leaflet-control-attribution a { color: var(--grey); }
+
+/* Tile cadangan OpenStreetMap dibuat gelap monokrom agar tetap senada */
+.tiles-osm { filter: invert(1) grayscale(1) brightness(0.7) contrast(1.1); }
 
 /* Titik anggota — cahaya kecil dengan soft glow */
 .ath-marker {
