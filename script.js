@@ -103,6 +103,10 @@ const BIRTHDAY_CARD_ASSETS = {
     front: "assets/birthdays/nafacha/front.jpg",
     back: "assets/birthdays/nafacha/back.jpg",
   },
+  "Bilqis Zakiyyah": {
+    front: "assets/birthdays/bilqis/front.jpg",
+    back: "assets/birthdays/bilqis/back.jpg",
+  },
 };
 
 /* ---------- 2. DATA MOOD ---------- */
@@ -204,7 +208,20 @@ function todayLabel() {
   return `${days[today.getDay()]}, ${today.getDate()} ${months[today.getMonth()]} ${today.getFullYear()}`;
 }
 
+/* Mode preview (khusus pengujian): buka index.html?preview=bilqis
+   Beberapa nama bisa dipisah koma: ?preview=bilqis,nafacha
+   Tanpa parameter ini, deteksi ulang tahun memakai tanggal perangkat seperti biasa. */
+function getPreviewBirthdays() {
+  const param = new URLSearchParams(window.location.search).get("preview");
+  if (!param) return null;
+  const keys = param.toLowerCase().split(",").map((k) => k.trim()).filter(Boolean);
+  if (!keys.length) return null;
+  return MEMBERS.filter((mem) => keys.some((k) => mem.name.toLowerCase().includes(k)));
+}
+
 function getTodaysBirthdays() {
+  const preview = getPreviewBirthdays();
+  if (preview) return preview;
   const today = new Date();
   const d = today.getDate();
   const m = today.getMonth() + 1;
