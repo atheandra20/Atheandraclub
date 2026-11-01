@@ -745,7 +745,7 @@ p { margin: 0; }
 }
 
 /* =========================================================
-   WHERE WE LEARN — world map section (Home)
+   WHERE WE LEARN — peta geografis (Leaflet) di Home
    ========================================================= */
 .map-subtitle {
   margin-top: -8px;
@@ -766,78 +766,128 @@ p { margin: 0; }
   width: 100%;
   border-radius: var(--radius-md);
   overflow: hidden;
+  isolation: isolate;
 }
 
-.world-map-svg {
-  display: block;
+.leaflet-map {
+  position: relative;
+  z-index: 0;
   width: 100%;
-  height: auto;
-  aspect-ratio: 1000 / 500;
+  aspect-ratio: 4 / 3;
+  background: var(--charcoal-deep);
 }
 
-.map-continents path {
-  fill: rgba(242, 236, 224, 0.07);
-  stroke: rgba(242, 236, 224, 0.14);
-  stroke-width: 1;
+.map-fallback {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  text-align: center;
+  font-size: 0.85rem;
+  color: var(--text-on-dark-muted);
+  background: var(--charcoal-deep);
 }
 
-.map-dot {
+/* Leaflet — disesuaikan dengan palet charcoal / cream */
+.map-wrap .leaflet-container {
+  background: var(--charcoal-deep);
+  font-family: var(--font-body);
+  outline: none;
+}
+.map-wrap .leaflet-bar {
+  border: 1px solid rgba(242, 236, 224, 0.16);
+  box-shadow: none;
+  border-radius: 10px;
+  overflow: hidden;
+}
+.map-wrap .leaflet-bar a,
+.map-wrap .leaflet-bar a:hover {
+  background: rgba(38, 37, 31, 0.92);
+  color: var(--cream);
+  border-bottom: 1px solid rgba(242, 236, 224, 0.12);
+}
+.map-wrap .leaflet-bar a:hover { background: rgba(70, 68, 58, 0.95); }
+.map-wrap .leaflet-bar a:last-child { border-bottom: none; }
+.map-wrap .leaflet-bar a.leaflet-disabled { color: rgba(242, 236, 224, 0.3); background: rgba(38, 37, 31, 0.92); }
+.ath-reset a {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.map-wrap .leaflet-control-attribution {
+  background: rgba(26, 25, 22, 0.72);
+  color: var(--text-on-dark-muted);
+  font-size: 10px;
+}
+.map-wrap .leaflet-control-attribution a { color: var(--grey); }
+
+/* Titik anggota — cahaya kecil dengan soft glow */
+.ath-marker {
+  background: none;
+  border: none;
   cursor: pointer;
+  outline: none;
+}
+.ath-dot {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 5px;
+  height: 5px;
+  margin: -2.5px 0 0 -2.5px;
+  border-radius: 50%;
+  background: var(--cream);
+  box-shadow: 0 0 5px 1px rgba(242, 236, 224, 0.55), 0 0 12px 4px rgba(242, 236, 224, 0.2);
   opacity: 0;
-  transform-origin: center;
-  animation: mapDotIn 0.6s var(--ease) forwards;
+  animation: mapDotIn 0.7s var(--ease) forwards;
   animation-delay: var(--dot-delay, 0ms);
+  transition: width 0.25s var(--ease), height 0.25s var(--ease), margin 0.25s var(--ease), box-shadow 0.25s var(--ease);
 }
 @keyframes mapDotIn {
-  from { opacity: 0; transform: scale(0.3); }
-  to { opacity: 1; transform: scale(1); }
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
+.ath-marker:hover .ath-dot,
+.ath-marker:focus-visible .ath-dot,
+.ath-marker.active .ath-dot {
+  width: 8px;
+  height: 8px;
+  margin: -4px 0 0 -4px;
+  box-shadow: 0 0 8px 2px rgba(242, 236, 224, 0.7), 0 0 20px 7px rgba(242, 236, 224, 0.28);
+}
+.spider-anim .ath-marker { transition: transform 0.3s var(--ease); }
 
-.map-dot-glow {
-  fill: rgba(242, 236, 224, 0.35);
-  filter: blur(2.5px);
-  transition: r 0.25s var(--ease), fill 0.25s var(--ease);
-  pointer-events: none;
-}
-.map-dot-core {
-  fill: var(--cream);
-  transition: r 0.25s var(--ease);
-  pointer-events: none;
-}
-.map-dot-hit {
-  fill: transparent;
-  pointer-events: all;
-}
-.map-dot:hover .map-dot-glow,
-.map-dot:focus-visible .map-dot-glow,
-.map-dot.active .map-dot-glow {
-  r: 8;
-  fill: rgba(242, 236, 224, 0.55);
-}
-.map-dot:hover .map-dot-core,
-.map-dot:focus-visible .map-dot-core,
-.map-dot.active .map-dot-core {
-  r: 2.4;
-}
-.map-dot:focus-visible { outline: none; }
-.map-dot:focus { outline: none; }
-
+/* Popup anggota (kartu cream) */
 .map-popup {
   position: absolute;
   z-index: 5;
-  max-width: 220px;
+  width: max-content;
+  max-width: 230px;
   background: var(--cream);
   color: var(--text-on-cream);
   border-radius: var(--radius-sm);
-  padding: 12px 14px;
+  padding: 12px 34px 12px 14px;
   box-shadow: 0 12px 28px rgba(0, 0, 0, 0.28);
-  pointer-events: none;
   animation: popupIn 0.22s var(--ease);
 }
 @keyframes popupIn {
   from { opacity: 0; transform: translateY(4px); }
   to { opacity: 1; transform: translateY(0); }
 }
+.map-popup-close {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  font-size: 0.7rem;
+  color: var(--text-muted);
+}
+.map-popup-close:hover { background: var(--cream-soft); }
 .map-popup-name {
   font-family: var(--font-display);
   font-size: 0.92rem;
@@ -852,6 +902,14 @@ p { margin: 0; }
   font-size: 0.74rem;
   color: var(--text-muted);
   margin-top: 1px;
+}
+.map-popup-coord {
+  font-size: 0.66rem;
+  color: var(--text-muted);
+  opacity: 0.75;
+  margin-top: 6px;
+  letter-spacing: 0.02em;
+  font-variant-numeric: tabular-nums;
 }
 
 .map-footer {
@@ -879,15 +937,15 @@ p { margin: 0; }
     left: 16px;
     right: 16px;
     bottom: calc(86px + env(safe-area-inset-bottom, 0px));
+    width: auto;
     max-width: none;
-    pointer-events: auto;
     z-index: 30;
   }
 }
 
 @media (min-width: 760px) {
   .map-card { padding: 26px 26px 20px; }
-  .map-popup { pointer-events: auto; }
+  .leaflet-map { aspect-ratio: 2 / 1; }
 }
 
 /* Reduced motion */

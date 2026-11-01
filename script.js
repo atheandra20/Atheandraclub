@@ -60,7 +60,7 @@ const MEMBERS = [
   { name: "Sa'adatuz Zainiyyah",       day: 21, month: 2,  institution: "UINSUKA", city: "Yogyakarta" },
   { name: "Salsabila Muizzatsani",     day: null, month: 8, institution: "UINSA", city: "Surabaya" },
   { name: "Salsabila Triputri",        day: null, month: 4, institution: "UNESA", city: "Surabaya" },
-  { name: "Sanaya Aulia A.",           day: 20, month: 4,  institution: "Universitas Muhammadiyah Malang", city: "Malang" },
+  { name: "Sanaya Aulia A.",           day: 20, month: 4,  institution: "Universitas Negeri Malang", city: "Malang" },
   { name: "Sandya Farah S.",           day: 1,  month: 3,  institution: "UINSA", city: "Surabaya" },
   { name: "Saraswati Alifya D.",       day: null, month: null, institution: "UINSA", city: "Surabaya" },
   { name: "Shelfi Nadian P.",          day: 30, month: 7,  institution: "UINMA", city: "Malang" },
@@ -73,24 +73,156 @@ const MEMBERS = [
   { name: "Zakiyyah Aulia Nameer",     day: 21, month: 4,  institution: "Madrasah Muallimin Muallimat Bahrul Ulum", city: "Jombang" },
 ];
 
-/* Koordinat kota (lat, lon) untuk titik pada peta "Where We Learn" */
-const CITY_COORDS = {
-  "Surabaya":     { lat: -7.2575, lon: 112.7521, country: "Indonesia" },
-  "Jombang":      { lat: -7.5461, lon: 112.2384, country: "Indonesia" },
-  "Yogyakarta":   { lat: -7.7956, lon: 110.3695, country: "Indonesia" },
-  "Malang":       { lat: -7.9666, lon: 112.6326, country: "Indonesia" },
-  "Bojonegoro":   { lat: -7.1503, lon: 111.8817, country: "Indonesia" },
-  "Karawang":     { lat: -6.3227, lon: 107.3376, country: "Indonesia" },
-  "Bandung":      { lat: -6.9175, lon: 107.6191, country: "Indonesia" },
-  "Jember":       { lat: -8.1844, lon: 113.7040, country: "Indonesia" },
-  "Lamongan":     { lat: -7.1225, lon: 112.4211, country: "Indonesia" },
-  "Gresik":       { lat: -7.1547, lon: 112.6541, country: "Indonesia" },
-  "Tulungagung":  { lat: -8.0645, lon: 111.9027, country: "Indonesia" },
-  "Semarang":     { lat: -6.9667, lon: 110.4167, country: "Indonesia" },
-  "Mojokerto":    { lat: -7.4664, lon: 112.4335, country: "Indonesia" },
-  "Jakarta":      { lat: -6.2088, lon: 106.8456, country: "Indonesia" },
-  "Kediri":       { lat: -7.8480, lon: 112.0178, country: "Indonesia" },
-  "Cairo":        { lat: 30.0444, lon: 31.2357,  country: "Egypt" },
+/* Data institusi untuk peta "Where We Learn".
+   Kunci = nilai field `institution` pada MEMBERS (harus sama persis).
+   Satu institusi = satu koordinat kampus, dipakai bersama oleh semua anggota di institusi itu.
+   Untuk menambah lokasi anggota baru: isi `institution` pada MEMBERS, lalu tambahkan
+   institusinya di sini kalau belum ada.
+
+   verified: false  -> koordinat BELUM dicek ke sumber resmi / peta (perkiraan titik kampus).
+   Ubah ke true setelah dicek di Google Maps / OpenStreetMap, dan perbaiki lat/lon bila perlu. */
+const INSTITUTIONS = {
+  /* ---- Surabaya ---- */
+  "UNESA": {
+    name: "Universitas Negeri Surabaya", city: "Surabaya", country: "Indonesia",
+    lat: -7.3002, lon: 112.6730, verified: false,
+    note: "Kampus Lidah Wetan. Kampus Ketintang berjarak sekitar 7 km di sisi timur.",
+  },
+  "UINSA": {
+    name: "UIN Sunan Ampel Surabaya", city: "Surabaya", country: "Indonesia",
+    lat: -7.3139, lon: 112.7326, verified: false,
+  },
+  "UPN Veteran": {
+    name: "UPN Veteran Jawa Timur", city: "Surabaya", country: "Indonesia",
+    lat: -7.3336, lon: 112.7882, verified: false,
+  },
+  "UNSURI": {
+    name: "Universitas Sunan Giri Surabaya", city: "Surabaya", country: "Indonesia",
+    lat: -7.3490, lon: 112.7295, verified: false,
+    note: "Alamat resminya Jl. Brigjen Katamso II, Waru, Sidoarjo (berbatasan dengan Surabaya).",
+  },
+  "UNUSA": {
+    name: "Universitas Nahdlatul Ulama Surabaya", city: "Surabaya", country: "Indonesia",
+    lat: -7.3365, lon: 112.7465, verified: false,
+    note: "Kampus B, Jl. Jemursari.",
+  },
+  "Telkom University": {
+    name: "Telkom University Surabaya", city: "Surabaya", country: "Indonesia",
+    lat: -7.3149, lon: 112.7254, verified: false,
+  },
+  "Poltekkes Surabaya": {
+    name: "Poltekkes Kemenkes Surabaya", city: "Surabaya", country: "Indonesia",
+    lat: -7.2770, lon: 112.7535, verified: false,
+  },
+
+  /* ---- Jombang ---- */
+  "Ma'had 'Aly Hasyim Asy'ari": {
+    name: "Ma'had 'Aly Hasyim Asy'ari", city: "Jombang", country: "Indonesia",
+    lat: -7.6029, lon: 112.2345, verified: false,
+    note: "Titik di area Pesantren Tebuireng.",
+  },
+  "UNDAR": {
+    name: "Universitas Darul 'Ulum", city: "Jombang", country: "Indonesia",
+    lat: -7.5330, lon: 112.2940, verified: false,
+    note: "Titik di area Rejoso, Peterongan. Kepercayaan lokasi paling rendah di Jombang.",
+  },
+  "UNWAHA": {
+    name: "Universitas KH. A. Wahab Hasbullah", city: "Jombang", country: "Indonesia",
+    lat: -7.5601, lon: 112.2108, verified: false,
+    note: "Area Tambakberas.",
+  },
+  "Madrasah Muallimin Muallimat Bahrul Ulum": {
+    name: "Madrasah Muallimin Muallimat Bahrul Ulum", city: "Jombang", country: "Indonesia",
+    lat: -7.5610, lon: 112.2120, verified: false,
+    note: "Area Pesantren Bahrul Ulum, Tambakberas.",
+  },
+
+  /* ---- Malang ---- */
+  "UINMA": {
+    name: "UIN Maulana Malik Ibrahim Malang", city: "Malang", country: "Indonesia",
+    lat: -7.9525, lon: 112.6082, verified: false,
+  },
+  "Universitas Negeri Malang": {
+    name: "Universitas Negeri Malang", city: "Malang", country: "Indonesia",
+    lat: -7.9604, lon: 112.6167, verified: false,
+  },
+
+  /* ---- Kota / kabupaten lain di Jawa ---- */
+  "Universitas Terbuka": {
+    name: "Universitas Terbuka", city: "Bojonegoro", country: "Indonesia",
+    lat: -7.1536, lon: 111.8820, verified: false,
+    note: "Titik perkiraan di Bojonegoro; lokasi layanan UT belum diketahui pastinya.",
+  },
+  "UNUGIRI": {
+    name: "Universitas Nahdlatul Ulama Sunan Giri", city: "Bojonegoro", country: "Indonesia",
+    lat: -7.1626, lon: 111.8748, verified: false,
+  },
+  "UINSIKA": {
+    name: "UINSIKA", city: "Karawang", country: "Indonesia",
+    lat: -6.3318, lon: 107.3040, verified: false,
+    note: "Nama 'UINSIKA' belum bisa dicocokkan dengan institusi resmi. Titik ini memakai perkiraan kampus UNSIKA (Universitas Singaperbangsa Karawang). Mohon dikonfirmasi.",
+  },
+  "UINSUKA": {
+    name: "UIN Sunan Kalijaga", city: "Yogyakarta", country: "Indonesia",
+    lat: -7.7824, lon: 110.3926, verified: false,
+  },
+  "UIN Sunan Gunung Djati": {
+    name: "UIN Sunan Gunung Djati", city: "Bandung", country: "Indonesia",
+    lat: -6.9319, lon: 107.7183, verified: false,
+    note: "Kampus Cibiru.",
+  },
+  "UINKHAS": {
+    name: "UIN Kiai Haji Achmad Siddiq Jember", city: "Jember", country: "Indonesia",
+    lat: -8.1990, lon: 113.6320, verified: false,
+  },
+  "UNEJ": {
+    name: "Universitas Jember", city: "Jember", country: "Indonesia",
+    lat: -8.1650, lon: 113.7170, verified: false,
+  },
+  "Universitas Muhammadiyah Lamongan": {
+    name: "Universitas Muhammadiyah Lamongan", city: "Lamongan", country: "Indonesia",
+    lat: -7.1045, lon: 112.3790, verified: false,
+  },
+  "UIZ": {
+    name: "UIZ", city: "Gresik", country: "Indonesia",
+    lat: -7.1547, lon: 112.6541, verified: false,
+    note: "Nama 'UIZ' belum bisa dicocokkan dengan institusi resmi. Titik ini hanya perkiraan pusat Kota Gresik. Mohon dikonfirmasi.",
+  },
+  "UIN SATU": {
+    name: "UIN Sayyid Ali Rahmatullah Tulungagung", city: "Tulungagung", country: "Indonesia",
+    lat: -8.0774, lon: 111.9025, verified: false,
+  },
+  "UIN Walisongo": {
+    name: "UIN Walisongo Semarang", city: "Semarang", country: "Indonesia",
+    lat: -7.0522, lon: 110.3467, verified: false,
+    note: "Kampus Ngaliyan.",
+  },
+  "Universitas Abdul Chalim": {
+    name: "Universitas Abdul Chalim", city: "Mojokerto", country: "Indonesia",
+    lat: -7.6520, lon: 112.5270, verified: false,
+    note: "Area Pacet.",
+  },
+  "UNJ": {
+    name: "Universitas Negeri Jakarta", city: "Jakarta", country: "Indonesia",
+    lat: -6.1947, lon: 106.8815, verified: false,
+    note: "Kampus Rawamangun.",
+  },
+  "UIN Syarif Hidayatullah": {
+    name: "UIN Syarif Hidayatullah Jakarta", city: "Jakarta", country: "Indonesia",
+    lat: -6.3057, lon: 106.7527, verified: false,
+    note: "Kampus Ciputat.",
+  },
+  "UIN Syaikh Wasil": {
+    name: "UIN Syaikh Wasil Kediri", city: "Kediri", country: "Indonesia",
+    lat: -7.8093, lon: 112.0245, verified: false,
+  },
+
+  /* ---- Luar negeri ---- */
+  "Al-Azhar University": {
+    name: "Al-Azhar University", city: "Cairo", country: "Egypt",
+    lat: 30.0765, lon: 31.3345, verified: false,
+    note: "Titik di area Nasr City. Kampus Al-Azhar tersebar di beberapa lokasi di Kairo.",
+  },
 };
 
 /* Anggota yang punya kartu ulang tahun bergambar asli */
@@ -468,6 +600,7 @@ function initHomeNav() {
       const view = btn.dataset.view;
       $$(".home-view").forEach((v) => v.classList.remove("active"));
       $("#view-" + view).classList.add("active");
+      if (view === "home") showWorldMap();
     });
   });
 }
@@ -476,204 +609,353 @@ function enterHome() {
   $("#home-greeting-name").textContent = state.currentUser.split(" ")[0];
   $("#home-date").textContent = todayLabel();
   showScreen("screen-home");
+  showWorldMap();
 }
 
-/* ---------- 10b. WHERE WE LEARN — WORLD MAP ---------- */
-const MAP_VIEWBOX = { w: 1000, h: 500 };
+/* ---------- 10b. WHERE WE LEARN — PETA GEOGRAFIS (Leaflet + OpenStreetMap) ---------- */
+/* Tile: CARTO "dark_nolabels" (data © OpenStreetMap contributors, © CARTO) */
+const MAP_TILE_URL = "https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png";
+const MAP_ATTRIBUTION =
+  '© <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors © <a href="https://carto.com/attributions" target="_blank" rel="noopener">CARTO</a>';
+const MAP_WORLD_VIEW = [[-58, -180], [80, 180]];
+const MAP_OVERLAP_PX = 12;      /* titik yang jaraknya <= 12px dianggap bertumpuk */
+const MAP_SPIDER_MIN_ZOOM = 16; /* di atas zoom ini, grup tidak di-zoom lagi tapi langsung di-spiderfy */
 
-function projectLatLon(lat, lon) {
-  const x = ((lon + 180) / 360) * MAP_VIEWBOX.w;
-  const y = ((90 - lat) / 180) * MAP_VIEWBOX.h;
-  return { x, y };
-}
+let mapPoints = [];
+let worldMapState = null;
 
-/* hash string -> 0..1, dipakai untuk offset yang stabil (tidak berubah tiap reload) */
-function hashUnit(str) {
-  let h = 0;
-  for (let i = 0; i < str.length; i++) {
-    h = (h << 5) - h + str.charCodeAt(i);
-    h |= 0;
-  }
-  return (Math.abs(h) % 1000) / 1000;
-}
-
+/* Satu anggota yang punya institusi terdaftar = satu titik. Tanpa institusi/koordinat = tanpa titik. */
 function buildMapPoints() {
-  const withLocation = MEMBERS.filter((m) => m.city && CITY_COORDS[m.city]);
-
-  /* kelompokkan per kota */
-  const byCity = new Map();
-  withLocation.forEach((m) => {
-    if (!byCity.has(m.city)) byCity.set(m.city, []);
-    byCity.get(m.city).push(m);
-  });
-
   const points = [];
-
-  byCity.forEach((cityMembers, city) => {
-    const coord = CITY_COORDS[city];
-    const cityPoint = projectLatLon(coord.lat, coord.lon);
-
-    /* kelompokkan per institusi dalam kota yang sama */
-    const byInstitution = new Map();
-    cityMembers.forEach((m) => {
-      const key = m.institution || "—";
-      if (!byInstitution.has(key)) byInstitution.set(key, []);
-      byInstitution.get(key).push(m);
-    });
-
-    const institutions = Array.from(byInstitution.keys());
-    const instCount = institutions.length;
-    const instRadius = instCount > 1 ? 12 + Math.min(instCount, 8) * 4.2 : 0;
-
-    institutions.forEach((institution, iIdx) => {
-      let instX = cityPoint.x;
-      let instY = cityPoint.y;
-      if (instCount > 1) {
-        const angle = (iIdx / instCount) * Math.PI * 2 + hashUnit(city) * Math.PI * 2;
-        instX += Math.cos(angle) * instRadius;
-        instY += Math.sin(angle) * instRadius * 0.6; /* sedikit gepeng biar pas proporsi peta */
-      }
-
-      const members = byInstitution.get(institution);
-      const n = members.length;
-      const personRadius = n > 1 ? 6 + Math.min(n, 10) * 3 : 0;
-
-      members.forEach((m, pIdx) => {
-        let px = instX;
-        let py = instY;
-        if (n > 1) {
-          const angle = (pIdx / n) * Math.PI * 2 + hashUnit(m.name) * Math.PI * 2;
-          px += Math.cos(angle) * personRadius;
-          py += Math.sin(angle) * personRadius * 0.6;
-        }
-        points.push({
-          name: m.name,
-          institution: m.institution,
-          city,
-          country: coord.country,
-          x: px,
-          y: py,
-        });
-      });
+  MEMBERS.forEach((m) => {
+    if (!m.institution) return;
+    const inst = INSTITUTIONS[m.institution];
+    if (!inst || typeof inst.lat !== "number" || typeof inst.lon !== "number") {
+      console.warn(`[Where We Learn] Koordinat belum ada untuk "${m.institution}" (${m.name}); titik tidak ditampilkan.`);
+      return;
+    }
+    points.push({
+      name: m.name,
+      institution: inst.name || m.institution,
+      city: inst.city,
+      country: inst.country,
+      lat: inst.lat,
+      lon: inst.lon,
+      verified: inst.verified === true,
     });
   });
-
   return points;
 }
 
+function updateMapStats(points) {
+  const statsEl = $("#map-stats");
+  if (!statsEl) return;
+  const locations = new Set(points.map((p) => `${p.city}|${p.country}`));
+  statsEl.textContent = `${points.length} PEOPLE · ${locations.size} LOCATIONS`;
+}
+
+function showMapFallback() {
+  const fb = $("#map-fallback");
+  if (fb) fb.classList.remove("hidden");
+}
+
+/* Dipanggil sekali saat halaman dimuat: hitung data & statistik (belum membuat peta). */
 function initWorldMap() {
-  const dotsLayer = $("#map-dots");
-  const svg = $("#world-map");
+  mapPoints = buildMapPoints();
+  updateMapStats(mapPoints);
+  const hint = $("#map-hint");
+  if (hint && window.matchMedia("(hover: none) and (pointer: coarse)").matches) {
+    hint.textContent = "Tap a light to see who's there. Use two fingers to move the map.";
+  }
+}
+
+/* Peta dibuat saat Home benar-benar tampil (Leaflet butuh ukuran container yang valid). */
+function showWorldMap() {
+  if (!$("#leaflet-map")) return;
+  requestAnimationFrame(() => {
+    if (!worldMapState) {
+      try {
+        worldMapState = createWorldMap();
+      } catch (err) {
+        console.error("[Where We Learn] Peta gagal dibuat:", err);
+        showMapFallback();
+      }
+    } else {
+      worldMapState.refresh();
+    }
+  });
+}
+
+function createWorldMap() {
+  if (typeof L === "undefined") {
+    showMapFallback();
+    return null;
+  }
+
+  const mapEl = $("#leaflet-map");
+  const wrap = $("#map-wrap");
   const popup = $("#map-popup");
   const popupName = $("#map-popup-name");
   const popupInst = $("#map-popup-inst");
   const popupLoc = $("#map-popup-loc");
-  const statsEl = $("#map-stats");
-  if (!dotsLayer || !svg) return;
+  const popupCoord = $("#map-popup-coord");
+  const popupClose = $("#map-popup-close");
 
-  const points = buildMapPoints();
+  const touchOnly = window.matchMedia("(hover: none) and (pointer: coarse)").matches;
+  const worldBounds = L.latLngBounds(MAP_WORLD_VIEW);
 
-  /* statistik dinamis: jumlah orang & jumlah lokasi (kota+negara unik) */
-  const peopleCount = points.length;
-  const uniqueLocations = new Set(points.map((p) => `${p.city}|${p.country}`));
-  if (statsEl) {
-    statsEl.textContent = `${peopleCount} PEOPLE · ${uniqueLocations.size} LOCATIONS`;
-  }
-
-  dotsLayer.innerHTML = "";
-  points.forEach((pt, idx) => {
-    const g = document.createElementNS("http://www.w3.org/2000/svg", "g");
-    g.setAttribute("class", "map-dot");
-    g.setAttribute("tabindex", "0");
-    g.setAttribute("role", "button");
-    g.setAttribute("aria-label", `${pt.name}, ${pt.institution || ""}, ${pt.city}`);
-    g.style.setProperty("--dot-delay", `${Math.min(idx * 28, 900)}ms`);
-
-    const glow = document.createElementNS("http://www.w3.org/2000/svg", "circle");
-    glow.setAttribute("class", "map-dot-glow");
-    glow.setAttribute("cx", pt.x);
-    glow.setAttribute("cy", pt.y);
-    glow.setAttribute("r", 5.5);
-
-    const core = document.createElementNS("http://www.w3.org/2000/svg", "circle");
-    core.setAttribute("class", "map-dot-core");
-    core.setAttribute("cx", pt.x);
-    core.setAttribute("cy", pt.y);
-    core.setAttribute("r", 1.8);
-
-    const hit = document.createElementNS("http://www.w3.org/2000/svg", "circle");
-    hit.setAttribute("class", "map-dot-hit");
-    hit.setAttribute("cx", pt.x);
-    hit.setAttribute("cy", pt.y);
-    hit.setAttribute("r", 6.5);
-
-    g.appendChild(hit);
-    g.appendChild(glow);
-    g.appendChild(core);
-    dotsLayer.appendChild(g);
-
-    function openPopup() {
-      $$(".map-dot", dotsLayer).forEach((d) => d.classList.remove("active"));
-      g.classList.add("active");
-      popupName.textContent = pt.name.toUpperCase();
-      popupInst.textContent = pt.institution || "";
-      popupLoc.textContent = `${pt.city}, ${pt.country}`;
-      popup.classList.remove("hidden");
-      popup.classList.remove("as-sheet");
-
-      if (window.matchMedia("(min-width: 760px)").matches) {
-        const svgRect = svg.getBoundingClientRect();
-        const px = svgRect.left + (pt.x / MAP_VIEWBOX.w) * svgRect.width;
-        const py = svgRect.top + (pt.y / MAP_VIEWBOX.h) * svgRect.height;
-        const wrapRect = $("#map-wrap").getBoundingClientRect();
-        let left = px - wrapRect.left + 14;
-        let top = py - wrapRect.top - 10;
-        popup.style.left = left + "px";
-        popup.style.top = top + "px";
-        popup.style.right = "auto";
-        popup.style.bottom = "auto";
-
-        /* clamp supaya popup tidak keluar kontainer */
-        requestAnimationFrame(() => {
-          const popRect = popup.getBoundingClientRect();
-          if (popRect.right > wrapRect.right) {
-            popup.style.left = px - wrapRect.left - popRect.width - 14 + "px";
-          }
-          if (popRect.bottom > wrapRect.bottom) {
-            popup.style.top = wrapRect.height - popRect.height - 10 + "px";
-          }
-          if (popRect.top < wrapRect.top) {
-            popup.style.top = "10px";
-          }
-        });
-      } else {
-        popup.classList.add("as-sheet");
-        popup.style.left = "";
-        popup.style.top = "";
-      }
-    }
-
-    g.addEventListener("click", (e) => {
-      e.stopPropagation();
-      openPopup();
-    });
-    g.addEventListener("keydown", (e) => {
-      if (e.key === "Enter" || e.key === " ") {
-        e.preventDefault();
-        openPopup();
-      }
-    });
+  const map = L.map(mapEl, {
+    zoomSnap: 0.25,
+    zoomDelta: 1,
+    maxZoom: 18,
+    maxBounds: [[-85, -200], [85, 200]],
+    maxBoundsViscosity: 0.7,
+    worldCopyJump: false,
+    scrollWheelZoom: false, /* aktif hanya setelah peta difokuskan, supaya scroll halaman tidak terganggu */
+    dragging: !touchOnly,   /* di layar sentuh: 1 jari = scroll halaman, 2 jari = geser/zoom peta */
+    attributionControl: false,
+    zoomControl: true,
   });
+
+  L.control.attribution({ prefix: '<a href="https://leafletjs.com" target="_blank" rel="noopener">Leaflet</a>' })
+    .addAttribution(MAP_ATTRIBUTION)
+    .addTo(map);
+
+  L.tileLayer(MAP_TILE_URL, {
+    subdomains: "abcd",
+    maxZoom: 18,
+    noWrap: true,
+  }).addTo(map);
+
+  map.fitBounds(worldBounds, { animate: false });
+  map.setMinZoom(map.getBoundsZoom(worldBounds));
+
+  /* Tombol reset ke tampilan dunia */
+  const ResetControl = L.Control.extend({
+    options: { position: "topleft" },
+    onAdd() {
+      const bar = L.DomUtil.create("div", "leaflet-bar ath-reset");
+      const btn = L.DomUtil.create("a", "", bar);
+      btn.href = "#";
+      btn.setAttribute("role", "button");
+      btn.setAttribute("title", "Reset to world view");
+      btn.setAttribute("aria-label", "Reset to world view");
+      btn.innerHTML =
+        '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17M12 3.5c2.6 2.4 4 5.3 4 8.5s-1.4 6.1-4 8.5c-2.6-2.4-4-5.3-4-8.5s1.4-6.1 4-8.5z"/></svg>';
+      L.DomEvent.disableClickPropagation(bar);
+      L.DomEvent.on(btn, "click", (e) => {
+        L.DomEvent.preventDefault(e);
+        resetView();
+      });
+      return bar;
+    },
+  });
+  new ResetControl().addTo(map);
+
+  /* ----- marker: satu anggota = satu marker ----- */
+  const entries = mapPoints.map((pt, idx) => {
+    const latLng = L.latLng(pt.lat, pt.lon);
+    const marker = L.marker(latLng, {
+      icon: L.divIcon({
+        className: "ath-marker",
+        html: `<span class="ath-dot" style="--dot-delay:${Math.min(idx * 28, 900)}ms"></span>`,
+        iconSize: [28, 28],
+        iconAnchor: [14, 14],
+      }),
+      keyboard: true,
+    }).addTo(map);
+    const el = marker.getElement();
+    if (el) {
+      el.setAttribute("role", "button");
+      el.setAttribute("aria-label", `${pt.name}, ${pt.institution}, ${pt.city}`);
+    }
+    const entry = { pt, marker, origLatLng: latLng, spiderfied: false };
+    marker.on("click", () => onMarkerClick(entry));
+    return entry;
+  });
+
+  let activeEntry = null;
+  let spider = null;
+
+  /* ----- popup ----- */
+  function setActiveClass(entry) {
+    entries.forEach((e) => {
+      const el = e.marker.getElement();
+      if (el) el.classList.toggle("active", e === entry);
+    });
+  }
 
   function closePopup() {
+    activeEntry = null;
     popup.classList.add("hidden");
-    $$(".map-dot", dotsLayer).forEach((d) => d.classList.remove("active"));
+    setActiveClass(null);
   }
 
-  svg.addEventListener("click", closePopup);
-  $("#map-wrap").addEventListener("click", (e) => {
-    if (e.target.id === "map-wrap") closePopup();
+  function positionPopup() {
+    if (!activeEntry || popup.classList.contains("hidden")) return;
+    if (popup.classList.contains("as-sheet")) {
+      popup.style.left = "";
+      popup.style.top = "";
+      return;
+    }
+    const p = map.latLngToContainerPoint(activeEntry.marker.getLatLng());
+    const w = popup.offsetWidth;
+    const h = popup.offsetHeight;
+    const W = wrap.clientWidth;
+    const H = wrap.clientHeight;
+    let left = p.x + 18;
+    if (left + w > W - 8) left = p.x - w - 18;
+    left = Math.max(8, Math.min(left, W - w - 8));
+    const top = Math.max(8, Math.min(p.y - h / 2, H - h - 8));
+    popup.style.left = `${left}px`;
+    popup.style.top = `${top}px`;
+  }
+
+  function openPopup(entry) {
+    activeEntry = entry;
+    const { pt } = entry;
+    popupName.textContent = pt.name.toUpperCase();
+    popupInst.textContent = pt.institution;
+    popupLoc.textContent = `${pt.city}, ${pt.country}`;
+    popupCoord.textContent = `${pt.lat.toFixed(4)}, ${pt.lon.toFixed(4)}`;
+    const desktop = window.matchMedia("(min-width: 760px)").matches;
+    popup.classList.toggle("as-sheet", !desktop);
+    popup.classList.remove("hidden");
+    setActiveClass(entry);
+    positionPopup();
+  }
+
+  /* ----- spiderfy: tebar marker yang bertumpuk tanpa mengubah koordinat aslinya ----- */
+  function spiderOffsets(n) {
+    const offsets = [];
+    if (n <= 8) {
+      const r = Math.max(34, (n * 34) / (2 * Math.PI));
+      for (let i = 0; i < n; i++) {
+        const a = -Math.PI / 2 + (i * 2 * Math.PI) / n;
+        offsets.push(L.point(Math.cos(a) * r, Math.sin(a) * r));
+      }
+    } else {
+      const golden = 2.399963;
+      for (let i = 0; i < n; i++) {
+        const r = 24 * Math.sqrt(i + 0.6);
+        offsets.push(L.point(Math.cos(i * golden) * r, Math.sin(i * golden) * r));
+      }
+    }
+    return offsets;
+  }
+
+  function animateSpider() {
+    mapEl.classList.add("spider-anim");
+    window.clearTimeout(animateSpider._t);
+    animateSpider._t = window.setTimeout(() => mapEl.classList.remove("spider-anim"), 420);
+  }
+
+  function collapseSpider() {
+    if (!spider) return;
+    animateSpider();
+    spider.group.forEach((e) => {
+      e.spiderfied = false;
+      e.marker.setLatLng(e.origLatLng);
+      e.marker.setZIndexOffset(0);
+    });
+    map.removeLayer(spider.lines);
+    spider = null;
+  }
+
+  function spiderfy(group) {
+    collapseSpider();
+    animateSpider();
+    const lat = group.reduce((s, e) => s + e.origLatLng.lat, 0) / group.length;
+    const lng = group.reduce((s, e) => s + e.origLatLng.lng, 0) / group.length;
+    const center = L.latLng(lat, lng);
+    const centerPt = map.latLngToLayerPoint(center);
+    const offsets = spiderOffsets(group.length);
+    const lines = L.layerGroup().addTo(map);
+    L.circleMarker(center, {
+      radius: 2.5, color: "#f2ece0", weight: 1, fillColor: "#f2ece0", fillOpacity: 0.6, interactive: false,
+    }).addTo(lines);
+    group.forEach((e, i) => {
+      const target = map.layerPointToLatLng(centerPt.add(offsets[i]));
+      e.spiderfied = true;
+      e.marker.setLatLng(target);
+      e.marker.setZIndexOffset(1000);
+      L.polyline([center, target], { color: "#f2ece0", opacity: 0.35, weight: 1, interactive: false }).addTo(lines);
+    });
+    spider = { group, lines };
+  }
+
+  function overlappingGroup(entry) {
+    const p0 = map.latLngToContainerPoint(entry.marker.getLatLng());
+    return entries.filter(
+      (e) => !e.spiderfied && map.latLngToContainerPoint(e.marker.getLatLng()).distanceTo(p0) <= MAP_OVERLAP_PX
+    );
+  }
+
+  function onMarkerClick(entry) {
+    if (entry.spiderfied) {
+      openPopup(entry);
+      return;
+    }
+    const group = overlappingGroup(entry);
+    if (group.length > 1) {
+      closePopup();
+      const bounds = L.latLngBounds(group.map((g) => g.origLatLng));
+      const spanMeters = bounds.getNorthEast().distanceTo(bounds.getSouthWest());
+      if (spanMeters > 30 && map.getZoom() < MAP_SPIDER_MIN_ZOOM) {
+        /* titik berbeda lokasi tapi tampak menumpuk: perbesar dulu ke wilayahnya */
+        collapseSpider();
+        map.flyToBounds(bounds, { padding: [48, 48], maxZoom: 17, duration: 0.9 });
+      } else {
+        /* koordinat kampus yang sama persis: tebar agar semua anggota bisa dipilih */
+        spiderfy(group);
+      }
+      return;
+    }
+    collapseSpider();
+    openPopup(entry);
+  }
+
+  function resetView() {
+    collapseSpider();
+    closePopup();
+    map.flyToBounds(worldBounds, { duration: 0.9 });
+  }
+
+  function refresh() {
+    map.invalidateSize({ animate: false });
+    map.setMinZoom(map.getBoundsZoom(worldBounds));
+    positionPopup();
+  }
+
+  /* ----- event peta ----- */
+  map.on("click", () => {
+    collapseSpider();
+    closePopup();
   });
+  map.on("zoomstart", () => {
+    collapseSpider();
+    closePopup();
+  });
+  map.on("move", positionPopup);
+  map.on("moveend", () => {
+    if (activeEntry && !map.getBounds().contains(activeEntry.marker.getLatLng())) closePopup();
+  });
+  map.on("focus", () => map.scrollWheelZoom.enable());
+  map.on("blur", () => map.scrollWheelZoom.disable());
+
+  popupClose.addEventListener("click", closePopup);
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") {
+      collapseSpider();
+      closePopup();
+    }
+  });
+  window.addEventListener("resize", () => {
+    window.clearTimeout(createWorldMap._rt);
+    createWorldMap._rt = window.setTimeout(refresh, 150);
+  });
+
+  return { map, entries, refresh, resetView, closePopup, collapseSpider };
 }
 
 /* ---------- 11. WIRE UP BUTTONS ---------- */
