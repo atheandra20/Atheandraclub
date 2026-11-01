@@ -1,3 +1,6 @@
+/* Penanda versi: dibaca oleh index.html untuk mendeteksi script.js yang belum ter-update */
+window.ATHEANDRA_SCRIPT_VERSION = "4";
+
 /* =========================================================
    ATHEANDRA — script.js
    Data anggota, alur login → mood → birthday → home
@@ -657,7 +660,7 @@ function updateMapStats(points) {
 
 /* Versi file: harus sama di index.html (meta atheandra-version), style.css (--app-version), dan script.js.
    Dipakai untuk mendeteksi kalau ada file yang belum ter-update di hosting. */
-const APP_VERSION = "3";
+const APP_VERSION = "4";
 
 function checkAppVersions() {
   const stale = [];
