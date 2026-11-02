@@ -1,5 +1,5 @@
 /* Penanda versi: dibaca oleh index.html untuk mendeteksi script.js yang belum ter-update */
-window.ATHEANDRA_SCRIPT_VERSION = "4";
+window.ATHEANDRA_SCRIPT_VERSION = "5";
 
 /* =========================================================
    ATHEANDRA — script.js
@@ -616,11 +616,50 @@ function enterHome() {
 }
 
 /* ---------- 10b. WHERE WE LEARN — PETA GEOGRAFIS (Leaflet + OpenStreetMap) ---------- */
-/* Tile: CARTO "dark_nolabels" (data © OpenStreetMap contributors, © CARTO) */
-const MAP_TILE_URL = "https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png";
-const MAP_ATTRIBUTION =
-  '© <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors © <a href="https://carto.com/attributions" target="_blank" rel="noopener">CARTO</a>';
-const MAP_TILE_FALLBACK_URL = "https://tile.openstreetmap.org/{z}/{x}/{y}.png";
+/* Sumber tile peta (semuanya tanpa API key).
+   Default: Esri "World Dark Gray Base" — abu gelap monokrom, cocok dengan palet charcoal.
+   Cadangan otomatis: OpenStreetMap (digelapkan dengan CSS).
+   CATATAN: sejak akhir Agustus 2026 CARTO memberi watermark "API KEY REQUIRED" pada SEMUA tile raster tanpa key,
+   termasuk dark_all dan dark_nolabels. Karena itu CARTO tidak dipakai sebagai default.
+   Untuk mencoba sumber lain tanpa mengubah kode, tambahkan ke alamat website: ?tiles=esri | osm | carto */
+const MAP_CARTO_KEY = ""; /* opsional: isi dengan API key CARTO gratis (carto.com/basemaps/apikey) bila ingin memakai CARTO */
+const MAP_TILE_SOURCES = {
+  esri: {
+    url: "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}",
+    options: {
+      maxZoom: 18,
+      maxNativeZoom: 16,
+      noWrap: true,
+      attribution: "Sources: Esri, HERE, Garmin, © OpenStreetMap contributors, and the GIS User Community",
+    },
+  },
+  osm: {
+    url: "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
+    options: {
+      maxZoom: 18,
+      noWrap: true,
+      className: "tiles-osm",
+      attribution: '© <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors',
+    },
+  },
+  carto: {
+    url: "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png" + (MAP_CARTO_KEY ? `?key=${MAP_CARTO_KEY}` : ""),
+    options: {
+      subdomains: "abcd",
+      maxZoom: 18,
+      noWrap: true,
+      attribution: '© <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors © <a href="https://carto.com/attributions" target="_blank" rel="noopener">CARTO</a>',
+    },
+  },
+};
+
+/* Urutan sumber tile: yang dipilih dulu, lalu cadangan bila tile gagal dimuat sama sekali */
+function getTileChain() {
+  const wanted = new URLSearchParams(window.location.search).get("tiles");
+  if (wanted === "carto") return ["carto", "esri", "osm"];
+  if (wanted === "osm") return ["osm"];
+  return ["esri", "osm"];
+}
 const MAP_WORLD_VIEW = [[-58, -180], [80, 180]];
 const MAP_OVERLAP_PX = 12;      /* titik yang jaraknya <= 12px dianggap bertumpuk */
 const MAP_SPIDER_MIN_ZOOM = 16; /* di atas zoom ini, grup tidak di-zoom lagi tapi langsung di-spiderfy */
@@ -660,7 +699,7 @@ function updateMapStats(points) {
 
 /* Versi file: harus sama di index.html (meta atheandra-version), style.css (--app-version), dan script.js.
    Dipakai untuk mendeteksi kalau ada file yang belum ter-update di hosting. */
-const APP_VERSION = "4";
+const APP_VERSION = "5";
 
 function checkAppVersions() {
   const stale = [];
@@ -768,33 +807,32 @@ function createWorldMap() {
     zoomControl: true,
   });
 
-  L.control.attribution({ prefix: '<a href="https://leafletjs.com" target="_blank" rel="noopener">Leaflet</a>' })
-    .addAttribution(MAP_ATTRIBUTION)
-    .addTo(map);
+  /* Attribution mengikuti sumber tile yang sedang dipakai (diatur lewat opsi tile layer) */
+  L.control.attribution({ prefix: '<a href="https://leafletjs.com" target="_blank" rel="noopener">Leaflet</a>' }).addTo(map);
 
-  let tiles = L.tileLayer(MAP_TILE_URL, {
-    subdomains: "abcd",
-    maxZoom: 18,
-    noWrap: true,
-  }).addTo(map);
-
-  /* Kalau tile CARTO gagal dimuat sama sekali (mis. diblokir jaringan), pindah ke tile OpenStreetMap */
+  const tileChain = getTileChain();
+  let tileIdx = 0;
+  let tiles = null;
   let tilesLoaded = 0;
   let tilesFailed = 0;
-  let usingFallbackTiles = false;
-  tiles.on("tileload", () => { tilesLoaded++; });
-  tiles.on("tileerror", () => {
-    tilesFailed++;
-    if (!usingFallbackTiles && tilesLoaded === 0 && tilesFailed >= 4) {
-      usingFallbackTiles = true;
-      map.removeLayer(tiles);
-      tiles = L.tileLayer(MAP_TILE_FALLBACK_URL, {
-        maxZoom: 18,
-        noWrap: true,
-        className: "tiles-osm",
-      }).addTo(map);
-    }
-  });
+
+  function mountTiles(idx) {
+    const src = MAP_TILE_SOURCES[tileChain[idx]];
+    tilesLoaded = 0;
+    tilesFailed = 0;
+    tiles = L.tileLayer(src.url, src.options).addTo(map);
+    tiles.on("tileload", () => { tilesLoaded++; });
+    tiles.on("tileerror", () => {
+      tilesFailed++;
+      /* tidak ada satu pun tile yang berhasil dimuat: pindah ke sumber cadangan berikutnya */
+      if (tilesLoaded === 0 && tilesFailed >= 4 && tileIdx < tileChain.length - 1) {
+        tileIdx++;
+        map.removeLayer(tiles);
+        mountTiles(tileIdx);
+      }
+    });
+  }
+  mountTiles(tileIdx);
 
   map.fitBounds(worldBounds, { animate: false });
   map.setMinZoom(map.getBoundsZoom(worldBounds));
