@@ -1,5 +1,5 @@
 /* Penanda versi: dibaca oleh index.html untuk mendeteksi script.js yang belum ter-update */
-window.ATHEANDRA_SCRIPT_VERSION = "5";
+window.ATHEANDRA_SCRIPT_VERSION = "6";
 
 /* =========================================================
    ATHEANDRA — script.js
@@ -699,7 +699,7 @@ function updateMapStats(points) {
 
 /* Versi file: harus sama di index.html (meta atheandra-version), style.css (--app-version), dan script.js.
    Dipakai untuk mendeteksi kalau ada file yang belum ter-update di hosting. */
-const APP_VERSION = "5";
+const APP_VERSION = "6";
 
 function checkAppVersions() {
   const stale = [];
@@ -1065,6 +1065,266 @@ function createWorldMap() {
   return { map, entries, refresh, resetView, closePopup, collapseSpider };
 }
 
+/* ---------- 10c. BIRTHDAY CALENDAR ---------- */
+/* Konfigurasi per bulan. Tahap pertama: hanya November 2026.
+   Untuk menambah bulan lain: tambahkan satu entri baru di CALENDAR_MONTHS (lihat panduan di bawah).
+   `owner` pada tiap stiker = nama anggota PERSIS seperti di MEMBERS (null = belum dihubungkan). */
+const CALENDAR_MONTHS = {
+  11: {
+    year: 2026,
+    title: "NOVEMBER",
+    caption: "November, a little celebration of us.",
+    illustration: "assets/calendar/november/illustration.png",
+    illustrationAlt: "Ilustrasi enam karakter chibi anggota ATHEANDRA yang berulang tahun di bulan November, piknik bersama",
+    stickers: [
+      { id: 1, src: "assets/stickers/november/sticker-1.png", owner: null },
+      { id: 2, src: "assets/stickers/november/sticker-2.png", owner: null },
+      { id: 3, src: "assets/stickers/november/sticker-3.png", owner: null },
+      { id: 4, src: "assets/stickers/november/sticker-4.png", owner: null },
+      { id: 5, src: "assets/stickers/november/sticker-5.png", owner: null },
+      { id: 6, src: "assets/stickers/november/sticker-6.png", owner: null },
+    ],
+  },
+};
+const CALENDAR_VIEW = { month: 11 }; /* bulan yang ditampilkan di halaman Calendar */
+const MONTH_NAMES_ID = [
+  "Januari", "Februari", "Maret", "April", "Mei", "Juni",
+  "Juli", "Agustus", "September", "Oktober", "November", "Desember",
+];
+const WEEKDAYS_EN = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+
+/* Ambil anggota yang berulang tahun pada bulan tertentu langsung dari MEMBERS.
+   Tanggal yang belum diketahui (day = null) TIDAK ditebak: masuk daftar `unknownDay`. */
+function getMonthBirthdays(month, year) {
+  const daysInMonth = new Date(year, month, 0).getDate();
+  const byDay = new Map();
+  const unknownDay = [];
+  MEMBERS.forEach((m) => {
+    if (m.month !== month) return;
+    if (m.day === null || m.day === undefined) {
+      unknownDay.push(m);
+      return;
+    }
+    if (m.day < 1 || m.day > daysInMonth) {
+      console.warn(`[Calendar] Tanggal tidak valid untuk ${m.name}: ${m.day}/${m.month}`);
+      return;
+    }
+    if (!byDay.has(m.day)) byDay.set(m.day, []);
+    byDay.get(m.day).push(m);
+  });
+  return { byDay, unknownDay };
+}
+
+function stickerForMember(cfg, name) {
+  return cfg.stickers.find((s) => s.owner === name) || null;
+}
+
+function calEl(tag, className, text) {
+  const node = document.createElement(tag);
+  if (className) node.className = className;
+  if (text !== undefined) node.textContent = text;
+  return node;
+}
+
+function calCake(className) {
+  const NS = "http://www.w3.org/2000/svg";
+  const svg = document.createElementNS(NS, "svg");
+  svg.setAttribute("class", className);
+  svg.setAttribute("viewBox", "0 0 64 64");
+  svg.setAttribute("aria-hidden", "true");
+  const use = document.createElementNS(NS, "use");
+  use.setAttribute("href", "#cal-cake");
+  svg.appendChild(use);
+  return svg;
+}
+
+function formatCalDate(day, month, year) {
+  return `${day} ${MONTH_NAMES_ID[month - 1]} ${year}`;
+}
+
+/* ----- popup / birthday card ----- */
+let calModalState = null;
+
+function ensureCalModal() {
+  if (calModalState) return calModalState;
+  const overlay = calEl("div", "cal-modal");
+  overlay.setAttribute("aria-hidden", "true");
+  const card = calEl("div", "cal-card");
+  card.setAttribute("role", "dialog");
+  card.setAttribute("aria-modal", "true");
+  card.setAttribute("aria-label", "Ulang tahun anggota ATHEANDRA");
+  const closeBtn = calEl("button", "cal-close", "✕");
+  closeBtn.type = "button";
+  closeBtn.setAttribute("aria-label", "Tutup");
+  const dateEl = calEl("p", "cal-card-date");
+  const titleEl = calEl("h3", "cal-card-title", "Happy Birthday");
+  const list = calEl("ul", "cal-people");
+  const note = calEl("p", "cal-card-note", "Selamat ulang tahun ♡");
+  card.append(closeBtn, dateEl, titleEl, list, note);
+  overlay.appendChild(card);
+  document.body.appendChild(overlay);
+
+  const state = { overlay, card, closeBtn, dateEl, list, lastFocus: null };
+  const close = () => closeCalModal();
+  closeBtn.addEventListener("click", close);
+  overlay.addEventListener("click", (e) => { if (e.target === overlay) close(); });
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && overlay.classList.contains("open")) close();
+  });
+  calModalState = state;
+  return state;
+}
+
+function openCalModal(cfg, day, members) {
+  const st = ensureCalModal();
+  st.lastFocus = document.activeElement;
+  st.dateEl.textContent = formatCalDate(day, CALENDAR_VIEW.month, cfg.year).toUpperCase();
+  st.list.innerHTML = "";
+  st.list.className = "cal-people" + (members.length > 2 ? " is-many" : "");
+  members.forEach((m, i) => {
+    const li = calEl("li", "cal-person");
+    const wrap = calEl("div", "cal-person-sticker");
+    wrap.style.setProperty("--tilt", `${i % 2 === 0 ? -3 : 3}deg`);
+    const sticker = stickerForMember(cfg, m.name);
+    if (sticker) {
+      const img = document.createElement("img");
+      img.src = sticker.src;
+      img.alt = `Stiker ${m.name}`;
+      wrap.appendChild(img);
+    } else {
+      wrap.classList.add("is-cake");
+      wrap.appendChild(calCake("cal-cake-lg"));
+    }
+    li.append(wrap, calEl("p", "cal-person-name", m.name));
+    st.list.appendChild(li);
+  });
+  st.overlay.setAttribute("aria-hidden", "false");
+  document.body.classList.add("no-scroll");
+  /* reflow agar transisi masuk berjalan */
+  void st.overlay.offsetWidth;
+  st.overlay.classList.add("open");
+  st.closeBtn.focus();
+}
+
+function closeCalModal() {
+  if (!calModalState) return;
+  const st = calModalState;
+  st.overlay.classList.remove("open");
+  st.overlay.setAttribute("aria-hidden", "true");
+  document.body.classList.remove("no-scroll");
+  if (st.lastFocus && st.lastFocus.focus) st.lastFocus.focus();
+}
+
+/* ----- render halaman kalender ----- */
+function renderCalendar() {
+  const root = $("#cal-root");
+  if (!root) return;
+  const month = CALENDAR_VIEW.month;
+  const cfg = CALENDAR_MONTHS[month];
+  root.innerHTML = "";
+  if (!cfg) {
+    root.appendChild(calEl("p", "cal-empty", "Kalender bulan ini belum tersedia."));
+    return;
+  }
+
+  const { byDay, unknownDay } = getMonthBirthdays(month, cfg.year);
+  const now = new Date();
+  const todayDay = now.getFullYear() === cfg.year && now.getMonth() + 1 === month ? now.getDate() : null;
+
+  const sheet = calEl("section", "cal-sheet");
+  sheet.setAttribute("aria-label", `Birthday Calendar ${cfg.title} ${cfg.year}`);
+
+  /* ilustrasi + teks kecil */
+  const figure = calEl("figure", "cal-figure");
+  const illu = document.createElement("img");
+  illu.className = "cal-illustration";
+  illu.src = cfg.illustration;
+  illu.alt = cfg.illustrationAlt;
+  figure.append(illu, calEl("figcaption", "cal-caption", cfg.caption));
+  sheet.appendChild(figure);
+
+  /* judul bulan */
+  const head = calEl("div", "cal-head");
+  head.append(calEl("h2", "cal-month", cfg.title), calEl("p", "cal-year", String(cfg.year)));
+  sheet.appendChild(head);
+
+  /* nama hari */
+  const weekdays = calEl("div", "cal-weekdays");
+  WEEKDAYS_EN.forEach((d, i) => {
+    weekdays.appendChild(calEl("span", i === 0 ? "is-sun" : i === 6 ? "is-sat" : "", d));
+  });
+  sheet.appendChild(weekdays);
+
+  /* grid tanggal: dimulai Minggu */
+  const grid = calEl("div", "cal-grid");
+  const offset = new Date(cfg.year, month - 1, 1).getDay();
+  const daysInMonth = new Date(cfg.year, month, 0).getDate();
+  for (let i = 0; i < offset; i++) grid.appendChild(calEl("span", "cal-day is-empty"));
+  for (let day = 1; day <= daysInMonth; day++) {
+    const weekday = (offset + day - 1) % 7;
+    const members = byDay.get(day) || [];
+    const hasBday = members.length > 0;
+    const cls = ["cal-day"];
+    if (weekday === 0) cls.push("is-sun");
+    if (weekday === 6) cls.push("is-sat");
+    if (day === todayDay) cls.push("is-today");
+    if (hasBday) cls.push("has-bday");
+    const cell = calEl(hasBday ? "button" : "span", cls.join(" "));
+    cell.appendChild(calEl("span", "cal-num", String(day)));
+    if (hasBday) {
+      cell.type = "button";
+      cell.appendChild(calCake("cal-cake"));
+      if (members.length > 1) cell.appendChild(calEl("span", "cal-count", String(members.length)));
+      cell.setAttribute(
+        "aria-label",
+        `${day} ${MONTH_NAMES_ID[month - 1]}: ${members.map((m) => m.name).join(", ")}`
+      );
+      cell.addEventListener("click", () => openCalModal(cfg, day, members));
+    }
+    grid.appendChild(cell);
+  }
+  sheet.appendChild(grid);
+  sheet.appendChild(calEl("p", "cal-hint", "Tap a cake to see who's celebrating."));
+
+  /* anggota bulan ini yang tanggalnya belum tercatat (tidak ditebak) */
+  if (unknownDay.length) {
+    const sec = calEl("div", "cal-unknown");
+    sec.appendChild(calEl("h3", "cal-sub", "Tanggal belum diketahui"));
+    sec.appendChild(calEl("p", "cal-sub-note", `Berulang tahun di bulan ${MONTH_NAMES_ID[month - 1]}, tanggalnya belum tercatat.`));
+    const chips = calEl("ul", "cal-chips");
+    unknownDay.forEach((m) => chips.appendChild(calEl("li", "cal-chip", m.name)));
+    sec.appendChild(chips);
+    sheet.appendChild(sec);
+  }
+
+  /* koleksi stiker */
+  const coll = calEl("div", "cal-collection");
+  coll.appendChild(calEl("h3", "cal-sub", `Stiker ${cfg.title.charAt(0) + cfg.title.slice(1).toLowerCase()}`));
+  const strip = calEl("ul", "cal-sticker-strip");
+  cfg.stickers.forEach((s, i) => {
+    const li = calEl("li", "cal-sticker-item");
+    const img = document.createElement("img");
+    img.src = s.src;
+    img.alt = s.owner ? `Stiker ${s.owner}` : `Stiker karakter ${s.id}`;
+    img.style.setProperty("--tilt", `${[-4, 3, -2, 4, -3, 2][i % 6]}deg`);
+    li.appendChild(img);
+    if (s.owner) li.appendChild(calEl("span", "cal-sticker-name", s.owner.split(" ")[0]));
+    strip.appendChild(li);
+  });
+  coll.appendChild(strip);
+  sheet.appendChild(coll);
+
+  root.appendChild(sheet);
+}
+
+function initCalendar() {
+  try {
+    renderCalendar();
+  } catch (err) {
+    console.error("[Calendar] Gagal membuat kalender:", err);
+  }
+}
+
 /* ---------- 11. WIRE UP BUTTONS ---------- */
 function initFlowButtons() {
   $("#mood-continue").addEventListener("click", () => {
@@ -1112,5 +1372,6 @@ document.addEventListener("DOMContentLoaded", () => {
   initFlowButtons();
   initHomeNav();
   initWorldMap();
+  initCalendar();
   showScreen("screen-login");
 });
