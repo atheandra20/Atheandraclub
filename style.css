@@ -4,7 +4,7 @@
    ========================================================= */
 
 :root {
-  --app-version: "6";
+  --app-version: "7";
   --charcoal: #26251f;
   --charcoal-deep: #1a1916;
   --cream: #f2ece0;
@@ -1291,6 +1291,61 @@ p { margin: 0; }
   .cal-sheet { padding: 38px 36px 28px; }
   .cal-day { font-size: 1.02rem; aspect-ratio: auto; height: 68px; padding-top: 6px; }
   .cal-cake { right: auto; left: calc(50% + 1px); bottom: 4px; width: 34px; }
+}
+
+/* =========================================================
+   BIRTHDAY CARD — aksi Download Card / Share to Instagram (semua kartu)
+   ========================================================= */
+.card-actions {
+  width: 100%;
+  max-width: 300px;
+  margin-top: 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+.card-side {
+  display: inline-flex;
+  padding: 3px;
+  border: 1px solid var(--grey-line);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.55);
+}
+.card-side button {
+  padding: 6px 18px;
+  border-radius: 999px;
+  font-size: 0.76rem;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+  transition: background 0.2s var(--ease), color 0.2s var(--ease);
+}
+.card-side button[aria-pressed="true"] { background: var(--charcoal); color: var(--cream); }
+.card-action-row { display: flex; gap: 8px; width: 100%; }
+.card-btn {
+  flex: 1;
+  padding: 12px 8px;
+  border: 1px solid var(--charcoal);
+  border-radius: var(--radius-md);
+  font-size: 0.82rem;
+  font-weight: 600;
+  line-height: 1.2;
+  transition: opacity 0.2s var(--ease), transform 0.15s var(--ease);
+}
+.card-btn.is-primary { background: var(--charcoal); color: var(--cream); }
+.card-btn.is-outline { background: transparent; color: var(--charcoal); }
+.card-btn:active { transform: scale(0.98); }
+.card-btn:disabled { opacity: 0.5; pointer-events: none; }
+.card-status {
+  min-height: 1.3em;
+  font-size: 0.74rem;
+  line-height: 1.4;
+  text-align: center;
+  color: var(--text-muted);
+}
+@media (min-width: 760px) {
+  .card-actions { max-width: 320px; }
 }
 
 /* Reduced motion */

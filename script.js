@@ -1,5 +1,5 @@
 /* Penanda versi: dibaca oleh index.html untuk mendeteksi script.js yang belum ter-update */
-window.ATHEANDRA_SCRIPT_VERSION = "6";
+window.ATHEANDRA_SCRIPT_VERSION = "7";
 
 /* =========================================================
    ATHEANDRA — script.js
@@ -228,19 +228,34 @@ const INSTITUTIONS = {
   },
 };
 
-/* Anggota yang punya kartu ulang tahun bergambar asli */
+/* Anggota yang punya kartu ulang tahun bergambar asli.
+   front/back  = gambar untuk tampilan di layar (ringan)
+   frontHD/backHD = gambar resolusi tinggi, hanya dimuat saat Download / Share
+   Kartu baru: tambahkan satu entri di sini (kunci = nama persis di MEMBERS). Tombol Download & Share otomatis ikut. */
 const BIRTHDAY_CARD_ASSETS = {
   "Bahriyatul Lathifa A.": {
     front: "assets/birthdays/bahriyatul/front.jpg",
     back: "assets/birthdays/bahriyatul/back.jpg",
+    frontHD: "assets/birthdays/bahriyatul/front-hd.jpg",
+    backHD: "assets/birthdays/bahriyatul/back-hd.jpg",
   },
   "Nafacha Mufidah": {
     front: "assets/birthdays/nafacha/front.jpg",
     back: "assets/birthdays/nafacha/back.jpg",
+    frontHD: "assets/birthdays/nafacha/front-hd.jpg",
+    backHD: "assets/birthdays/nafacha/back-hd.jpg",
   },
   "Bilqis Zakiyyah": {
     front: "assets/birthdays/bilqis/front.jpg",
     back: "assets/birthdays/bilqis/back.jpg",
+    frontHD: "assets/birthdays/bilqis/front-hd.jpg",
+    backHD: "assets/birthdays/bilqis/back-hd.jpg",
+  },
+  "Yusrul Hana Q.": {
+    front: "assets/birthdays/hana/front.jpg",
+    back: "assets/birthdays/hana/back.jpg",
+    frontHD: "assets/birthdays/hana/front-hd.jpg",
+    backHD: "assets/birthdays/hana/back-hd.jpg",
   },
 };
 
@@ -560,8 +575,84 @@ function buildBirthdayCardEl(name) {
   nameLabel.textContent = name;
   wrap.appendChild(nameLabel);
 
+  /* ----- aksi: pilih sisi, Download Card, Share to Instagram (berlaku untuk semua kartu) ----- */
+  const actions = document.createElement("div");
+  actions.className = "card-actions";
+
+  const sideGroup = document.createElement("div");
+  sideGroup.className = "card-side";
+  sideGroup.setAttribute("role", "group");
+  sideGroup.setAttribute("aria-label", "Pilih sisi kartu");
+  const sideBtns = {};
+  [["front", "Front"], ["back", "Inside"]].forEach(([key, label]) => {
+    const b = document.createElement("button");
+    b.type = "button";
+    b.textContent = label;
+    b.addEventListener("click", () => setSide(key));
+    sideBtns[key] = b;
+    sideGroup.appendChild(b);
+  });
+
+  const row = document.createElement("div");
+  row.className = "card-action-row";
+  const dlBtn = document.createElement("button");
+  dlBtn.type = "button";
+  dlBtn.className = "card-btn is-primary";
+  dlBtn.textContent = "Download Card";
+  const shBtn = document.createElement("button");
+  shBtn.type = "button";
+  shBtn.className = "card-btn is-outline";
+  shBtn.textContent = "Share to Instagram";
+  row.append(dlBtn, shBtn);
+
+  const status = document.createElement("p");
+  status.className = "card-status";
+  status.setAttribute("aria-live", "polite");
+
+  actions.append(sideGroup, row, status);
+  wrap.appendChild(actions);
+
+  let currentSide = "front";
+  let warmTimer = null;
+  function setSide(side) {
+    currentSide = side;
+    flip.classList.toggle("flipped", side === "back");
+    Object.keys(sideBtns).forEach((k) => sideBtns[k].setAttribute("aria-pressed", String(k === side)));
+    status.textContent = "";
+    /* siapkan PNG di latar belakang agar Share/Download terasa instan */
+    clearTimeout(warmTimer);
+    warmTimer = setTimeout(() => { getCardBlob(name, side).catch(() => {}); }, 900);
+  }
+
+  async function runAction(kind) {
+    const side = currentSide;
+    dlBtn.disabled = shBtn.disabled = true;
+    status.textContent = "Menyiapkan kartu…";
+    try {
+      if (kind === "download") {
+        await downloadCard(name, side);
+        status.textContent = `Kartu (${side === "front" ? "front" : "inside"}) diunduh sebagai PNG.`;
+      } else {
+        const result = await shareCard(name, side);
+        status.textContent =
+          result === "shared" ? "Siap dibagikan. ♡"
+          : result === "downloaded" ? "Perangkat ini belum bisa berbagi langsung. Kartu diunduh sebagai PNG — buka Instagram lalu unggah ke Story."
+          : result === "retry" ? "Kartu sudah siap. Ketuk Share to Instagram sekali lagi."
+          : "";
+      }
+    } catch (err) {
+      console.error("[Birthday Card] Ekspor gagal:", err);
+      status.textContent = "Kartu belum bisa disiapkan. Coba lagi sebentar.";
+    } finally {
+      dlBtn.disabled = shBtn.disabled = false;
+    }
+  }
+  dlBtn.addEventListener("click", () => runAction("download"));
+  shBtn.addEventListener("click", () => runAction("share"));
+  setSide("front");
+
   function toggle() {
-    flip.classList.toggle("flipped");
+    setSide(currentSide === "front" ? "back" : "front");
   }
   flip.addEventListener("click", toggle);
   flip.addEventListener("keydown", (e) => {
@@ -591,6 +682,186 @@ function genericCardFace(name, side) {
     `;
   }
   return el;
+}
+
+/* ---------- 9b. EXPORT KARTU: Download + Share to Instagram ---------- */
+/* Satu sistem ekspor untuk semua kartu: kartu digambar ke canvas dengan resolusi tinggi,
+   sudut dibulatkan (di luar sudut benar-benar transparan), lalu dikeluarkan sebagai PNG.
+   Download dan Share memakai file PNG yang sama persis. */
+const CARD_CORNER_RATIO = 0.0933; /* = radius kartu di layar (28px) / lebar kartu (300px) */
+const CARD_EXPORT_WIDTH = 1600;
+const cardBlobCache = new Map();
+
+function slugify(text) {
+  return text.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+}
+
+function loadImageFile(src) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => resolve(img);
+    img.onerror = () => reject(new Error(`Gambar gagal dimuat: ${src}`));
+    img.src = src;
+  });
+}
+
+function roundedRectPath(ctx, x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.arcTo(x + w, y, x + w, y + h, r);
+  ctx.arcTo(x + w, y + h, x, y + h, r);
+  ctx.arcTo(x, y + h, x, y, r);
+  ctx.arcTo(x, y, x + w, y, r);
+  ctx.closePath();
+}
+
+function wrapCanvasText(ctx, text, maxWidth) {
+  const words = text.split(" ");
+  const lines = [];
+  let line = "";
+  words.forEach((word) => {
+    const test = line ? `${line} ${word}` : word;
+    if (ctx.measureText(test).width > maxWidth && line) {
+      lines.push(line);
+      line = word;
+    } else {
+      line = test;
+    }
+  });
+  if (line) lines.push(line);
+  return lines;
+}
+
+/* Kartu tanpa gambar asli (kartu generik) digambar dengan desain yang sama seperti di layar */
+async function drawGenericCard(ctx, w, h, name, side) {
+  try {
+    await Promise.all([document.fonts.load("500 40px Fraunces"), document.fonts.load("italic 400 40px Fraunces"), document.fonts.load("400 24px Inter")]);
+  } catch (e) { /* font cadangan dipakai */ }
+  ctx.fillStyle = "#26251f";
+  ctx.fillRect(0, 0, w, h);
+  ctx.textAlign = "center";
+  ctx.textBaseline = "alphabetic";
+  const serif = "Fraunces, Georgia, serif";
+  const sans = "Inter, -apple-system, 'Segoe UI', sans-serif";
+  if (side === "front") {
+    try {
+      const logo = await loadImageFile("assets/logo-atheandra.png");
+      const size = w * 0.24;
+      ctx.drawImage(logo, (w - size) / 2, h * 0.3, size, size);
+    } catch (e) { /* tanpa logo */ }
+    ctx.fillStyle = "#b8b2a1";
+    ctx.font = `400 ${w * 0.026}px ${sans}`;
+    if ("letterSpacing" in ctx) ctx.letterSpacing = `${w * 0.006}px`;
+    ctx.fillText("est. 2020", w / 2, h * 0.3 + w * 0.24 + w * 0.07);
+    if ("letterSpacing" in ctx) ctx.letterSpacing = "0px";
+    ctx.fillStyle = "#f2ece0";
+    ctx.font = `500 ${w * 0.075}px ${serif}`;
+    const lines = wrapCanvasText(ctx, name, w * 0.8);
+    let y = h * 0.3 + w * 0.24 + w * 0.17;
+    lines.forEach((ln) => { ctx.fillText(ln, w / 2, y); y += w * 0.095; });
+    ctx.fillStyle = "#b8b2a1";
+    ctx.font = `400 ${w * 0.034}px ${sans}`;
+    ctx.fillText("is celebrating today ♡", w / 2, y + w * 0.02);
+  } else {
+    ctx.fillStyle = "#f2ece0";
+    ctx.font = `italic 400 ${w * 0.052}px ${serif}`;
+    const msg = `Selamat bertambah usia. Semoga tahun ini membawa lebih banyak hal baik untukmu, ${name.split(" ")[0]}.`;
+    const lines = wrapCanvasText(ctx, msg, w * 0.74);
+    const lh = w * 0.08;
+    let y = h / 2 - (lines.length * lh) / 2 + lh * 0.6;
+    lines.forEach((ln) => { ctx.fillText(ln, w / 2, y); y += lh; });
+    ctx.fillStyle = "#b8b2a1";
+    ctx.font = `400 ${w * 0.026}px ${sans}`;
+    if ("letterSpacing" in ctx) ctx.letterSpacing = `${w * 0.005}px`;
+    ctx.fillText("— ATHEANDRA", w / 2, y + lh * 0.6);
+    if ("letterSpacing" in ctx) ctx.letterSpacing = "0px";
+  }
+}
+
+async function renderCardBlob(name, side) {
+  const assets = BIRTHDAY_CARD_ASSETS[name];
+  let img = null;
+  let w = CARD_EXPORT_WIDTH;
+  let h = Math.round(CARD_EXPORT_WIDTH * (5462 / 3875)); /* proporsi kartu asli */
+  if (assets) {
+    const hd = side === "front" ? assets.frontHD : assets.backHD;
+    const normal = side === "front" ? assets.front : assets.back;
+    try {
+      img = await loadImageFile(hd || normal);
+    } catch (e) {
+      img = await loadImageFile(normal); /* HD gagal: pakai gambar tampilan */
+    }
+    w = img.naturalWidth;
+    h = img.naturalHeight;
+  }
+  const canvas = document.createElement("canvas");
+  canvas.width = w;
+  canvas.height = h;
+  const ctx = canvas.getContext("2d");
+  ctx.clearRect(0, 0, w, h);
+  ctx.save();
+  roundedRectPath(ctx, 0, 0, w, h, w * CARD_CORNER_RATIO);
+  ctx.clip();
+  if (img) {
+    ctx.imageSmoothingQuality = "high";
+    ctx.drawImage(img, 0, 0, w, h);
+  } else {
+    await drawGenericCard(ctx, w, h, name, side);
+  }
+  ctx.restore();
+  return new Promise((resolve, reject) => {
+    canvas.toBlob((blob) => (blob ? resolve(blob) : reject(new Error("Gagal membuat PNG"))), "image/png");
+  });
+}
+
+function getCardBlob(name, side) {
+  const key = `${name}|${side}`;
+  if (!cardBlobCache.has(key)) {
+    const p = renderCardBlob(name, side);
+    p.catch(() => cardBlobCache.delete(key));
+    cardBlobCache.set(key, p);
+  }
+  return cardBlobCache.get(key);
+}
+
+function cardFileName(name, side) {
+  return `atheandra-birthday-${slugify(name)}-${side === "front" ? "front" : "inside"}.png`;
+}
+
+function triggerDownload(blob, filename) {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 4000);
+}
+
+async function downloadCard(name, side) {
+  const blob = await getCardBlob(name, side);
+  triggerDownload(blob, cardFileName(name, side));
+}
+
+/* Share: Web Share API (berbagi gambar) bila didukung; kalau tidak, unduh PNG yang sama.
+   Hasil: "shared" | "downloaded" | "retry" | "cancelled" */
+async function shareCard(name, side) {
+  const blob = await getCardBlob(name, side);
+  const filename = cardFileName(name, side);
+  const file = new File([blob], filename, { type: "image/png" });
+  if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+    try {
+      await navigator.share({ files: [file], title: `Kartu ulang tahun ${name}` });
+      return "shared";
+    } catch (err) {
+      if (err && err.name === "AbortError") return "cancelled";
+      if (err && err.name === "NotAllowedError") return "retry"; /* gesture kadaluarsa; kartu sudah siap di cache */
+      /* error lain: lanjut ke unduhan */
+    }
+  }
+  triggerDownload(blob, filename);
+  return "downloaded";
 }
 
 /* ---------- 10. HOME / NAVIGATION ---------- */
@@ -699,7 +970,7 @@ function updateMapStats(points) {
 
 /* Versi file: harus sama di index.html (meta atheandra-version), style.css (--app-version), dan script.js.
    Dipakai untuk mendeteksi kalau ada file yang belum ter-update di hosting. */
-const APP_VERSION = "6";
+const APP_VERSION = "7";
 
 function checkAppVersions() {
   const stale = [];
