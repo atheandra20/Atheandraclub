@@ -1,5 +1,5 @@
 /* Penanda versi: dibaca oleh index.html untuk mendeteksi script.js yang belum ter-update */
-window.ATHEANDRA_SCRIPT_VERSION = "7";
+window.ATHEANDRA_SCRIPT_VERSION = "8";
 
 /* =========================================================
    ATHEANDRA — script.js
@@ -33,11 +33,11 @@ const MEMBERS = [
   { name: "Hidayatul Ulya",            day: 12, month: 3,  institution: null, city: null },
   { name: "I'i Abilahni",              day: null, month: null, institution: "UNUGIRI", city: "Bojonegoro" },
   { name: "Iftitach Farah A.",         day: 14, month: 6,  institution: "Telkom University", city: "Surabaya" },
-  { name: "Kayla Fakhira F.",          day: null, month: 11, institution: "UINMA", city: "Malang" },
+  { name: "Kayla Fakhira F.",          day: 6,  month: 11, institution: "UINMA", city: "Malang" },
   { name: "Khoirunnisa Ayunda",        day: null, month: 3, institution: null, city: null },
   { name: "Lanaa 'Ainunnajah",         day: 10, month: 2,  institution: null, city: null },
   { name: "Ma'rifatus Zahro",          day: 11, month: 11, institution: "UINKHAS", city: "Jember" },
-  { name: "Marcella Novia Yolanda",    day: null, month: 11, institution: "UNESA", city: "Surabaya" },
+  { name: "Marcella Novia Yolanda",    day: 18, month: 11, institution: "UNESA", city: "Surabaya" },
   { name: "Marsya Nariswari S.",       day: 26, month: 12, institution: null, city: null },
   { name: "Meidiana Alfadinova",       day: 1,  month: 5,  institution: "Universitas Muhammadiyah Lamongan", city: "Lamongan" },
   { name: "Muyassaroh",                day: 10, month: 1,  institution: "UINMA", city: "Malang" },
@@ -70,7 +70,7 @@ const MEMBERS = [
   { name: "Shofia Wulida H.",          day: 6,  month: 3,  institution: "UIN Syaikh Wasil", city: "Kediri" },
   { name: "Shofwatin Ni'mah",          day: 26, month: 4,  institution: "UNWAHA", city: "Jombang" },
   { name: "Shofy Agustina",            day: 17, month: 8,  institution: "UNESA", city: "Surabaya" },
-  { name: "Silla Adyalova",            day: null, month: 11, institution: "Poltekkes Surabaya", city: "Surabaya" },
+  { name: "Silla Adyalova",            day: 10, month: 11, institution: "Poltekkes Surabaya", city: "Surabaya" },
   { name: "Yusrul Hana Q.",            day: 7,  month: 11, institution: "UINSA", city: "Surabaya" },
   { name: "Zahra Salsabila",           day: 9,  month: 8,  institution: null, city: null },
   { name: "Zakiyyah Aulia Nameer",     day: 21, month: 4,  institution: "Madrasah Muallimin Muallimat Bahrul Ulum", city: "Jombang" },
@@ -256,6 +256,12 @@ const BIRTHDAY_CARD_ASSETS = {
     back: "assets/birthdays/hana/back.jpg",
     frontHD: "assets/birthdays/hana/front-hd.jpg",
     backHD: "assets/birthdays/hana/back-hd.jpg",
+  },
+  "Kayla Fakhira F.": {
+    front: "assets/birthdays/kayla/front.jpg",
+    back: "assets/birthdays/kayla/back.jpg",
+    frontHD: "assets/birthdays/kayla/front-hd.jpg",
+    backHD: "assets/birthdays/kayla/back-hd.jpg",
   },
 };
 
@@ -970,7 +976,7 @@ function updateMapStats(points) {
 
 /* Versi file: harus sama di index.html (meta atheandra-version), style.css (--app-version), dan script.js.
    Dipakai untuk mendeteksi kalau ada file yang belum ter-update di hosting. */
-const APP_VERSION = "7";
+const APP_VERSION = "8";
 
 function checkAppVersions() {
   const stale = [];
@@ -1345,15 +1351,17 @@ const CALENDAR_MONTHS = {
     year: 2026,
     title: "NOVEMBER",
     caption: "November, a little celebration of us.",
-    illustration: "assets/calendar/november/illustration.png",
-    illustrationAlt: "Ilustrasi enam karakter chibi anggota ATHEANDRA yang berulang tahun di bulan November, piknik bersama",
+    illustration: "assets/calendar/november/illustration.png?v=8",
+    illustrationAlt: "Ilustrasi tujuh karakter chibi anggota ATHEANDRA yang berulang tahun di bulan November, piknik bersama",
+    /* urutan stiker = urutan tanggal ulang tahun; owner = nama persis di MEMBERS */
     stickers: [
-      { id: 1, src: "assets/stickers/november/sticker-1.png", owner: null },
-      { id: 2, src: "assets/stickers/november/sticker-2.png", owner: null },
-      { id: 3, src: "assets/stickers/november/sticker-3.png", owner: null },
-      { id: 4, src: "assets/stickers/november/sticker-4.png", owner: null },
-      { id: 5, src: "assets/stickers/november/sticker-5.png", owner: null },
-      { id: 6, src: "assets/stickers/november/sticker-6.png", owner: null },
+      { id: 1, src: "assets/stickers/november/sticker-1.png?v=8", owner: "Kayla Fakhira F." },
+      { id: 2, src: "assets/stickers/november/sticker-2.png?v=8", owner: "Yusrul Hana Q." },
+      { id: 3, src: "assets/stickers/november/sticker-3.png?v=8", owner: "Silla Adyalova" },
+      { id: 4, src: "assets/stickers/november/sticker-4.png?v=8", owner: "Ma'rifatus Zahro" },
+      { id: 5, src: "assets/stickers/november/sticker-5.png?v=8", owner: "Marcella Novia Yolanda" },
+      { id: 6, src: "assets/stickers/november/sticker-6.png?v=8", owner: "Echa Afriana" },
+      { id: 7, src: "assets/stickers/november/sticker-7.png?v=8", owner: "Alicia Kirana C. I." },
     ],
   },
 };

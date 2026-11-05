@@ -4,7 +4,7 @@
    ========================================================= */
 
 :root {
-  --app-version: "7";
+  --app-version: "8";
   --charcoal: #26251f;
   --charcoal-deep: #1a1916;
   --cream: #f2ece0;
@@ -1177,13 +1177,14 @@ p { margin: 0; }
 
 .cal-sticker-strip {
   list-style: none;
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
   gap: 14px 10px;
   margin: 14px 0 0;
   padding: 0;
 }
-.cal-sticker-item { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.cal-sticker-item { display: flex; flex-direction: column; align-items: center; gap: 4px; width: calc((100% - 30px) / 4); }
 .cal-sticker-item img {
   width: 100%;
   max-width: 84px;
@@ -1285,7 +1286,7 @@ p { margin: 0; }
 .cal-card-note { margin-top: 18px; font-size: 0.8rem; color: #9a8068; }
 
 @media (min-width: 560px) {
-  .cal-sticker-strip { grid-template-columns: repeat(6, 1fr); }
+  .cal-sticker-item { width: calc((100% - 60px) / 7); }
 }
 @media (min-width: 760px) {
   .cal-sheet { padding: 38px 36px 28px; }
